@@ -8,6 +8,7 @@
 import { provide } from 'vue';
 import main_page from './components/主页.vue';
 import { websocket地址 } from './vue引入配置';
+import { 消息 } from './api/消息';
 
 interface 指令参数 {
 	类型: string;
@@ -26,6 +27,7 @@ const ws = new WebSocket(websocket地址);
 // 区分消息类型 根据不同类型解析数据
 ws.onopen = 连接成功;
 ws.onmessage = 通信;
+ws.onerror = 连接失败;
 
 // 方法
 function 发送指令(args: 指令参数) {
@@ -52,11 +54,14 @@ function 发送指令(args: 指令参数) {
 	// ws.send(order);
 	console.log('发送指令', { ...order, ...args.data });
 }
-function 连接成功(e: any) {
-	console.log('websocket已连接', e);
+function 连接成功() {
+	console.log('websocket已连接');
 }
 function 通信(e: any) {
 	console.log('通信', e);
+}
+function 连接失败() {
+	消息('websocket断开', 'error');
 }
 </script>
 
