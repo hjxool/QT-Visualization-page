@@ -4,56 +4,58 @@
 		<img v-if="data.logingroundcolorpic_base !== 'NONE'" class="bg_img" :src="data.logingroundcolorpic_base" />
 		<div v-else class="bg_img" :style="{ background: data.loginbackgroundcolor }"></div>
 		<!-- 表单 -->
-		<el-form :model="form" :rules="rules" ref="表单对象" label-width="auto" label-position="right">
-			<el-form-item label="用户名" prop="用户名">
-				<el-input v-model="form.用户名" />
-			</el-form-item>
+		<div class="scroll">
+			<el-form :model="form" :rules="rules" ref="表单对象" label-width="auto" label-position="right">
+				<el-form-item label="用户名" prop="用户名">
+					<el-input v-model="form.用户名" />
+				</el-form-item>
 
-			<el-form-item label="密码" prop="密码">
-				<el-input v-model="form.密码" show-password />
-			</el-form-item>
+				<el-form-item label="密码" prop="密码">
+					<el-input v-model="form.密码" show-password />
+				</el-form-item>
 
-			<el-form-item label="本机通信IP" prop="通信IP">
-				<el-select v-model="form.通信IP">
-					<el-option v-for="item in IP列表" :label="item" :value="item" />
-				</el-select>
-			</el-form-item>
+				<el-form-item label="本机通信IP" prop="通信IP">
+					<el-select v-model="form.通信IP">
+						<el-option v-for="item in IP列表" :label="item" :value="item" />
+					</el-select>
+				</el-form-item>
 
-			<el-form-item label="系统语言" prop="语言">
-				<el-select v-model="form.语言">
-					<el-option v-for="item in 语言列表" :label="item" :value="item" />
-				</el-select>
-			</el-form-item>
+				<el-form-item label="系统语言" prop="语言">
+					<el-select v-model="form.语言">
+						<el-option v-for="item in 语言列表" :label="item" :value="item" />
+					</el-select>
+				</el-form-item>
 
-			<div class="row_alyout check">
-				<div class="row_layout" @click="form.记住账号 = !form.记住账号">
-					<div class="icon">
-						<img v-show="!form.记住账号" class="bg_img" src="/img/未勾选.png" />
-						<img v-show="form.记住账号" class="bg_img" src="/img/勾选.png" />
+				<div class="row_layout check">
+					<div class="row_layout" @click="form.记住账号 = !form.记住账号">
+						<div class="icon">
+							<img v-show="!form.记住账号" class="bg_img" src="/img/未勾选.png" />
+							<img v-show="form.记住账号" class="bg_img" src="/img/勾选.png" />
+						</div>
+
+						<span>记住账号</span>
 					</div>
 
-					<span>记住账号</span>
-				</div>
+					<div class="row_layout" @click="form.记住密码 = !form.记住密码">
+						<div class="icon">
+							<img v-show="!form.记住密码" class="bg_img" src="/img/未勾选.png" />
+							<img v-show="form.记住密码" class="bg_img" src="/img/勾选.png" />
+						</div>
 
-				<div class="row_layout" @click="form.记住密码 = !form.记住密码">
-					<div class="icon">
-						<img v-show="!form.记住密码" class="bg_img" src="/img/未勾选.png" />
-						<img v-show="form.记住密码" class="bg_img" src="/img/勾选.png" />
+						<span>记住密码</span>
 					</div>
-
-					<span>记住密码</span>
 				</div>
-			</div>
 
-			<div class="row_alyout">
-				<el-button type="primary" @click="登录(表单对象)">登录</el-button>
-			</div>
-		</el-form>
+				<div class="row_layout" style="justify-content: center">
+					<el-button type="primary" @click="登录(表单对象)">登录</el-button>
+				</div>
+			</el-form>
+		</div>
 	</div>
 </template>
 
 <script setup lang="ts">
-import { defineProps, onMounted, ref } from 'vue';
+import { computed, defineProps, onMounted, ref } from 'vue';
 import { IP, 端口 } from '@/vue引入配置';
 import type { FormInstance } from 'element-plus';
 import { http请求 } from '@/api/请求';
@@ -61,17 +63,22 @@ import { 消息 } from '@/api/消息';
 import { useStore } from 'vuex';
 
 onMounted(async () => {
-	// 获取本机IP
-	let {
-		data: { ip },
-	} = await http请求(`http://${IP}:${端口}/GetCofig`);
-	form.value.通信IP = ip;
-	IP列表.value.push(ip);
+	try {
+		// 获取本机IP
+		let {
+			data: { ip },
+		} = await http请求(`http://${IP}:${端口}/GetCofig`);
+		form.value.通信IP = ip;
+		IP列表.value.push(ip);
+	} catch (error) {
+		console.log('登录组件err', error);
+	}
 });
 
 // 属性
 const store = useStore();
 const { 组件数据: data } = defineProps(['组件数据']);
+// const 缩放比 = computed(() => store.getters.缩放比);
 // 定义表单对象接口
 interface Form {
 	用户名: string;
@@ -142,8 +149,14 @@ function 表单初始化() {
 <style lang="less" scoped>
 .login {
 	z-index: 10;
-	padding: 20px;
-	overflow: auto;
+	padding: 20px 0;
+	overflow: hidden;
+	> .scroll {
+		width: 100%;
+		height: 100%;
+		overflow: auto;
+		padding: 0 20px;
+	}
 }
 .icon {
 	position: relative;

@@ -11,5 +11,9 @@ export default defineConfig({
 	},
 	server: {
 		open: true,
+		// 添加 host: '0.0.0.0' 才能让Vite开发服务器监听所有可用的网络接口
+		// 即可以用本机IP访问开发服务器
+		// 默认只会监听 localhost
+		host: '0.0.0.0',
 	},
 });

@@ -55,10 +55,10 @@ function 生成刻度值(): Marks {
 	};
 }
 function 获取动态属性() {
-	if (data.FontDirection !== '横') {
+	if (data.ScrollDirect !== '横') {
 		动态属性.value = {
 			vertical: true,
-			height: `${data.Height * 缩放比.value}px`,
+			height: `${data.Height * 缩放比.value.高度比}px`,
 		};
 	}
 }

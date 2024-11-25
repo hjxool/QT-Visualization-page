@@ -71,10 +71,10 @@ function 显示子容器(name?: string, 互锁组?: string): void {
 }
 function 通用组件样式(item: any): object {
 	return {
-		width: `${item.Width * 缩放比.value}px`,
-		height: `${item.Height * 缩放比.value}px`,
-		left: `${item.X1 * 缩放比.value}px`,
-		top: `${item.Y1 * 缩放比.value}px`,
+		width: `${item.Width * 缩放比.value.宽度比}px`,
+		height: `${item.Height * 缩放比.value.高度比}px`,
+		left: `${item.X1 * 缩放比.value.宽度比}px`,
+		top: `${item.Y1 * 缩放比.value.高度比}px`,
 		zIndex: item.zValue,
 	};
 }

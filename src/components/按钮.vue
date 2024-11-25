@@ -177,7 +177,7 @@ function 指令参数(按下: number) {
 function 按钮样式() {
 	return {
 		color: 激活.value ? data.ActiveFontColor : data.FontColor,
-		fontSize: `${data.FontSize * 缩放比.value}px`,
+		fontSize: `${data.FontSize * 缩放比.value.高度比}px`,
 		fontFamily: data.FontFormat,
 		borderColor: 激活.value ? data.ActiveRectWidth : data.RectColor,
 		borderWidth: `${data.RectWidth}px`,

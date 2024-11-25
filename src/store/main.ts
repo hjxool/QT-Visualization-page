@@ -1,5 +1,5 @@
 import { createStore } from "vuex"
-import other from './other.ts'
+import page from './page.ts'
 import user from './user.ts'
 
 interface State {
@@ -20,6 +20,8 @@ export default createStore({
     return {
       视窗宽度: 1,
       面板宽度: 1,
+      视窗高度: 1,
+      面板高度: 1,
       当前主页面: '', // 因为任意层级可以跳转主页面 因此设成全局属性
       通信数据: null,
       组件树: [],
@@ -41,6 +43,7 @@ export default createStore({
       // 保存当前面板宽度
       if (t) {
         state.面板宽度 = t.width
+        state.面板高度 = t.height
         state.当前主页面 = t.pagename
       }
     },
@@ -84,14 +87,18 @@ export default createStore({
     }
   },
   getters: {
-    缩放比(state: State): number {
+    缩放比(state: State): object {
       // console.log('计算缩放比例', state.视窗宽度, state.面板宽度)
-      let t = Math.round((state.视窗宽度 / state.面板宽度) * 100) / 100
-      return t
+      let w = Math.round((state.视窗宽度 / state.面板宽度) * 100) / 100
+      let h = Math.round((state.视窗高度 / state.面板高度) * 100) / 100
+      return {
+        宽度比: w,
+        高度比: h
+      }
     }
   },
   modules: {
-    other,
+    page,
     user,
   }
 })
