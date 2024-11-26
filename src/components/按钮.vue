@@ -87,55 +87,64 @@ if (data.PictureNme_base !== 'NONE' && !reg.test(data.PictureNme_base)) {
 // 方法
 function 按下() {
 	// 区分是否自锁 自锁非激活只下发按下 抬起不下发 激活只在抬起时下发
-	if (data.BtnEffect === '自锁') {
-		if (激活.value) {
-			// 激活时 按下下发抬起指令
-			激活.value = false;
-			指令参数(0);
-		} else {
-			// 非激活时 按下发送按下的指令
-			激活.value = true;
-			指令参数(1);
-		}
-	} else {
+	if (data.Data === '130') {
+		// 表示双发按钮
 		// 只要按下就进入激活状态
 		激活.value = true;
-		switch (跳转类型) {
-			case '主页面':
-				// 跳转主页 直接修改全局属性
-				store.commit('获取主页面', data.JumpToPage);
-				break;
-			case '附页':
-				// 跳转附页 向自身父组件发送消息 修改父组件的子容器
-				// 给其他互锁按钮发送消息 取消其他按钮的激活状态
-				跳转子容器(data.JumpToPage, data.Interlock);
-				break;
-			case '不跳转':
-				// 不跳转 但有可能与其他按钮为互锁
-				if (data.Interlock && data.Interlock !== 'NONE') {
-					// 存在互锁组 且 不跳转
-					切换激活(data.Interlock, data.name);
-				}
-				break;
-		}
 		// 不论是否跳转都下发指令
 		指令参数(1);
+	} else {
+		// 其他为单发按钮
+		if (data.BtnEffect === '自锁') {
+			if (激活.value) {
+				// 激活时 按下下发抬起指令
+				激活.value = false;
+			} else {
+				// 非激活时 按下发送按下的指令
+				激活.value = true;
+			}
+		} else {
+			激活.value = true;
+			switch (跳转类型) {
+				case '主页面':
+					// 跳转主页 直接修改全局属性
+					store.commit('获取主页面', data.JumpToPage);
+					break;
+				case '附页':
+					// 跳转附页 向自身父组件发送消息 修改父组件的子容器
+					// 给其他互锁按钮发送消息 取消其他按钮的激活状态
+					跳转子容器(data.JumpToPage, data.Interlock);
+					break;
+				case '不跳转':
+					// 不跳转 但有可能与其他按钮为互锁
+					if (data.Interlock && data.Interlock !== 'NONE') {
+						// 存在互锁组 且 不跳转
+						切换激活(data.Interlock, data.name);
+					}
+					break;
+			}
+		}
+		指令参数(-1);
 	}
 }
 function 抬起() {
-	if (data.BtnEffect !== '自锁') {
-		switch (跳转类型) {
-			case '主页面':
-				激活.value = false;
-				break;
-			case '不跳转':
-				// 不跳转 且 没有互锁 抬起时还原
-				if (!data.Interlock || data.Interlock === 'NONE') {
-					激活.value = false;
-				}
-				break;
-		}
+	if (data.Data === '130') {
+		激活.value = false;
 		指令参数(0);
+	} else {
+		if (data.BtnEffect !== '自锁') {
+			switch (跳转类型) {
+				case '主页面':
+					激活.value = false;
+					break;
+				case '不跳转':
+					// 不跳转 且 没有互锁 抬起时还原
+					if (!data.Interlock || data.Interlock === 'NONE') {
+						激活.value = false;
+					}
+					break;
+			}
+		}
 	}
 }
 function 查询跳转页类型(): string {

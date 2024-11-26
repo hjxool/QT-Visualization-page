@@ -78,7 +78,7 @@ onMounted(async () => {
 // 属性
 const store = useStore();
 const { 组件数据: data } = defineProps(['组件数据']);
-// const 缩放比 = computed(() => store.getters.缩放比);
+const 缩放比 = computed(() => store.getters.缩放比);
 // 定义表单对象接口
 interface Form {
 	用户名: string;
@@ -143,6 +143,11 @@ function 登录(formRef: FormInstance) {
 function 表单初始化() {
 	form.value.记住账号 && (form.value.用户名 = store.state.user.用户名);
 	form.value.记住密码 && (form.value.密码 = store.state.user.密码);
+}
+function 缩放() {
+	return {
+		transform: `scale(${缩放比.value.宽度比},${缩放比.value.高度比})`,
+	};
 }
 </script>
 
