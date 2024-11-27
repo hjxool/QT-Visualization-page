@@ -50,24 +50,27 @@ if (data.BtnEffect === '互锁') {
 	);
 }
 // 监听 通信数据变化
-watch(
-	() => store.state.通信数据,
-	(now: { 类型: string; data: any }) => {
-		if (now.类型 === '初始化') {
-			let result = now.data['btn'].find((e: any) => e.pagename === 页面名 && e.rectname === data.name);
-			if (result) {
-				激活.value = result.ispress === 1;
-			}
-		} else if (now.类型 === '更新') {
-			// 先找是否存在于values中
-			let result = now.data['values'].find((e: any) => e.pagename === 页面名 && e.rectname === data.name);
-			if (result) {
-				// 存在 则取外层 ispress字段值
-				激活.value = now.data['ispress'] === 1;
+// 只有 自锁 互锁 按钮才监听数据回显
+if (data.BtnEffect === '互锁' || data.BtnEffect === '自锁') {
+	watch(
+		() => store.state.通信数据,
+		(now: { 类型: string; data: any }) => {
+			if (now.类型 === '初始化') {
+				let result = now.data['btn'].find((e: any) => e.pagename === 页面名 && e.rectname === data.name);
+				if (result) {
+					激活.value = result.ispress === 1;
+				}
+			} else if (now.类型 === '更新') {
+				// 先找是否存在于values中
+				let result = now.data['values'].find((e: any) => e.pagename === 页面名 && e.rectname === data.name);
+				if (result) {
+					// 存在 则取外层 ispress字段值
+					激活.value = now.data['ispress'] === 1;
+				}
 			}
 		}
-	}
-);
+	);
+}
 // 注入公共方法
 // TS 类型断言
 // as () => 表示类型为 函数

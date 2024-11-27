@@ -21,6 +21,8 @@ export type { 指令参数 };
 
 const store = useStore();
 const 加载 = ref<boolean>(true);
+// 页面一启动生成唯一ID 用于过滤通信数据
+const uuid = 生成uuid();
 // 向子组件注入 公共方法
 provide('发送指令', 发送指令);
 // 取本地JSON界面数据的工程ID 回显根据工程id筛选
@@ -34,7 +36,7 @@ const ws = 创建websocket连接(websocket地址);
 function 发送指令(args: 指令参数) {
 	// 接收 对象 对象中必须有 类型 组件名 页面名 以及 其他任意字段
 	let order: any = {
-		senderip: 'admin',
+		senderip: uuid,
 		Username: store.state.user.用户名,
 		Password: store.state.user.密码,
 		cmd_type: 'ControlCommand',
@@ -70,8 +72,8 @@ function 创建websocket连接(url: string, reconnect_count: number = 0, max_cou
 	ws.onmessage = (e: any) => {
 		let { data: data } = JSON.parse(e.data);
 		console.log('通信', data);
-		if (data.projectid === 工程id) {
-			// 工程id对应才解析数据
+		if (data.projectid === 工程id && uuid === data.senderip) {
+			// 工程id uuid 对应才解析数据
 			store.commit('set_state', { name: '通信数据', value: { 类型: 初始化or更新, data } });
 			// 只有第一次来的数据才是 初始化数据 后续都是更新
 			初始化or更新 === '初始化' && (初始化or更新 = '更新');
@@ -87,6 +89,13 @@ function 创建websocket连接(url: string, reconnect_count: number = 0, max_cou
 		}
 	};
 	return ws;
+}
+function 生成uuid(): string {
+	// 基于 时间戳 和 随机数 组合生成
+	// 时间戳 和 随机数 都用 toString(36) 转换成 36进制 字符串
+	let 时间戳 = Date.now().toString(36);
+	let 随机数 = Math.random().toString(36).substring(2, 11); // 截取一部分字符串即可
+	return `${时间戳}-${随机数}`;
 }
 </script>
 
