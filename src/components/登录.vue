@@ -1,5 +1,5 @@
 <template>
-	<div class="login">
+	<div class="login" :style="缩放()">
 		<!-- 背景图 -->
 		<img v-if="data.logingroundcolorpic_base !== 'NONE'" class="bg_img" :src="data.logingroundcolorpic_base" />
 		<div v-else class="bg_img" :style="{ background: data.loginbackgroundcolor }"></div>
@@ -133,6 +133,7 @@ function 登录(formRef: FormInstance) {
 				form.value.记住账号 && store.commit('user/set_state', { name: '记住账号', value: form.value.用户名 });
 				form.value.记住密码 && store.commit('user/set_state', { name: '记住密码', value: form.value.密码 });
 				store.commit('获取主页面', data.JumpToPage);
+				store.commit('set_state', { name: '已登录', value: true });
 			} else {
 				// 登录失败 留在原位
 				消息('登陆验证失败', 'error');
@@ -146,6 +147,11 @@ function 表单初始化() {
 }
 function 缩放() {
 	return {
+		left: `${data.X1 * 缩放比.value.宽度比}px`,
+		top: `${data.Y1 * 缩放比.value.高度比}px`,
+		zIndex: data.zValue,
+		width: `${data.Width}px`,
+		height: `${data.Height}px`,
 		transform: `scale(${缩放比.value.宽度比},${缩放比.value.高度比})`,
 	};
 }

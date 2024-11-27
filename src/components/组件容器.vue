@@ -6,11 +6,11 @@
 
 			<cus-img v-if="item.property === 5" class="component" :组件数据="item" :style="通用组件样式(item)" />
 
-			<cus-text v-if="item.property === 12" class="component" :组件数据="item" :页面名="面板数据.pagename" />
+			<cus-text v-if="item.property === 12 || item.property === 4" class="component" :组件数据="item" :页面名="面板数据.pagename" />
 
 			<cus-slider v-if="item.property === 7" class="component" :组件数据="item" :页面名="面板数据.pagename" :style="通用组件样式(item)" />
 
-			<cus-login v-if="item.property === 22" class="component" :组件数据="item" :style="通用组件样式(item)" />
+			<cus-login v-if="item.property === 22" class="component" :组件数据="item" />
 
 			<container v-if="item.property === 8" v-show="item.ShowPage === 子容器" class="component container" :面板数据="item" :style="面板样式(item)"></container>
 		</template>

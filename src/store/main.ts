@@ -25,6 +25,7 @@ export default createStore({
       当前主页面: '', // 因为任意层级可以跳转主页面 因此设成全局属性
       通信数据: null,
       组件树: [],
+      已登录: false
     }
   },
   mutations: {
