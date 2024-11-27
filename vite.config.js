@@ -15,5 +15,10 @@ export default defineConfig({
 		// 即可以用本机IP访问开发服务器
 		// 默认只会监听 localhost
 		host: '0.0.0.0',
+		// MacOS 和 Windows 在文件监控机制上有差异
+		// 启用轮询监控 才能在 MacOS 触发热重载
+		watch: {
+			usePolling: true
+		},
 	},
 });
