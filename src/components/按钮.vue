@@ -191,7 +191,7 @@ function 按钮样式() {
 		color: 激活.value ? data.ActiveFontColor : data.FontColor,
 		fontSize: `${data.FontSize * 缩放比.value.高度比}px`,
 		fontFamily: data.FontFormat,
-		borderColor: 激活.value ? data.ActiveRectWidth : data.RectColor,
+		borderColor: 激活.value ? data.ActiveRectColor : data.RectColor,
 		borderWidth: `${data.RectWidth}px`,
 		borderStyle: 'solid',
 	};

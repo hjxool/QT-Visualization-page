@@ -10,6 +10,7 @@ import main_page from './components/主页.vue';
 import { websocket地址 } from './vue引入配置';
 import { 消息 } from './api/消息';
 import { useStore } from 'vuex';
+import { http请求 } from './api/请求';
 
 interface 指令参数 {
 	类型: string;
@@ -17,7 +18,15 @@ interface 指令参数 {
 	页面名: string;
 	[key: string]: any;
 }
-export type { 指令参数 };
+
+interface 依赖数据格式 {
+	ID: string;
+	组件名: string;
+	页面名: string;
+	[key: string]: any;
+}
+
+export type { 指令参数, 依赖数据格式 };
 
 const store = useStore();
 const 加载 = ref<boolean>(false);
@@ -25,6 +34,9 @@ const 加载 = ref<boolean>(false);
 const uuid = 生成uuid();
 // 向子组件注入 公共方法
 provide('发送指令', 发送指令);
+// 向 特定 子组件 注入属性 进行依赖收集
+const 依赖数据: 依赖数据格式[] = [];
+provide('依赖收集', 依赖数据);
 // 取本地JSON界面数据的工程ID 回显根据工程id筛选
 let 工程id: string = store.state.page.界面.projectid;
 // 监听websocket返回消息
@@ -37,6 +49,29 @@ watch(
 		if (now) {
 			ws = 创建websocket连接(websocket地址);
 		}
+	}
+);
+// http请求(
+// 	'https://restapi.amap.com/v3/weather/weatherInfo',
+// 	{
+// 		city: '510100',
+// 		key: '671a3717cd1a6efe282a95ed7247477b',
+// 	},
+// 	{},
+// 	(res: any) => {
+// 		console.log('获取天气', res.lives[0].weather);
+// 	}
+// );
+http请求(
+	'https://restapi.amap.com/v3/weather/weatherInfo',
+	{
+		keywords: encodeURIComponent('成都'),
+		key: '671a3717cd1a6efe282a95ed7247477b',
+		subdistrict: 2,
+	},
+	{},
+	(res: any) => {
+		console.log('获取城市编码', res);
 	}
 );
 
@@ -62,6 +97,7 @@ function 发送指令(args: 指令参数) {
 		case '按钮':
 			order.type = 'btn'; //btn:按钮 slider:滑块 matrix：矩阵 login:登录验证
 			order.ispress = args.按下; // 0非按下 1按下 -1 ignore
+			// 如果是绑定了其他组件的按钮 则需要在依赖数据中找对应值然后下发
 			break;
 		case '滑块':
 			order.type = 'slider';
