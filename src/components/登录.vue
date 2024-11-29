@@ -56,7 +56,7 @@
 
 <script setup lang="ts">
 import { computed, defineProps, onMounted, ref } from 'vue';
-import { IP, 端口 } from '@/vue引入配置';
+import { http地址 } from '@/vue引入配置';
 import type { FormInstance } from 'element-plus';
 import { http请求 } from '@/api/请求';
 import { 消息 } from '@/api/消息';
@@ -67,7 +67,7 @@ onMounted(async () => {
 		// 获取本机IP
 		let {
 			data: { ip },
-		} = await http请求(`http://${IP}:${端口}/GetCofig`);
+		} = await http请求(`${http地址}/GetCofig`);
 		form.value.通信IP = ip;
 		IP列表.value.push(ip);
 	} catch (error) {
@@ -121,12 +121,14 @@ if (data.logingroundcolorpic_base !== 'NONE' && !reg.test(data.logingroundcolorp
 function 登录(formRef: FormInstance) {
 	formRef.validate(async (result: boolean) => {
 		if (result) {
-			let res = await http请求(`http://${IP}:${端口}/UserOperation`, 'post', {
-				username: form.value.用户名,
-				password: form.value.密码,
-				type: 1,
+			let res = await http请求(`${http地址}/UserOperation`, 'post', {
+				data: {
+					username: form.value.用户名,
+					password: form.value.密码,
+					type: 1,
+				},
 			});
-			if (res.code === 200) {
+			if (res.code == 200) {
 				// 登陆成功 根据组件的JumpToPage跳转对应主页面
 				消息(`欢迎 ${form.value.用户名}`);
 				// 登陆成功后 根据勾选记住项 存到全局变量

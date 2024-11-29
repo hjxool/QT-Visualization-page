@@ -5,7 +5,7 @@
 </template>
 
 <script lang="ts" setup>
-import { computed } from 'vue';
+import { computed, watch } from 'vue';
 import { useStore } from 'vuex';
 // import type { State } from '@/store/main.ts';
 import container from './组件容器.vue';
@@ -17,7 +17,6 @@ window.addEventListener('resize', () => {
 	获取视窗宽度();
 });
 获取视窗宽度();
-store.commit('组件数据初始化', store.state.page.界面.data);
 
 // 计算属性返回的是ref对象 因此先要对value解构
 // 报错！computed(() => store.getters)设置的是getters.value对象是响应式 因此会使解构出来的 缩放比 不能动态变化
@@ -26,10 +25,15 @@ store.commit('组件数据初始化', store.state.page.界面.data);
 // } = computed(() => store.getters);
 // const 缩放比 = computed(() => store.getters.缩放比);
 
-// 获取当前主页面
-store.commit('获取主页面');
+// 获取当前主页面 因为变成了异步获取界面 因此监听组件树构成后再获取主页面
 const 当前主页面 = computed(() => store.state.当前主页面);
 const 组件树 = computed(() => store.state.组件树);
+watch(
+	() => 组件树,
+	(now: any) => {
+		now.length && store.commit('获取主页面');
+	}
+);
 
 // 方法
 function 面板样式(panel: any): object {

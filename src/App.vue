@@ -5,12 +5,11 @@
 </template>
 
 <script lang="ts" setup>
-import { provide, ref, watch } from 'vue';
+import { computed, provide, watch } from 'vue';
 import main_page from './components/主页.vue';
-import { websocket地址 } from './vue引入配置';
+import { websocket地址 } from '@/vue引入配置';
 import { 消息 } from './api/消息';
 import { useStore } from 'vuex';
-import { http请求 } from './api/请求';
 
 interface 指令参数 {
 	类型: string;
@@ -29,7 +28,7 @@ interface 依赖数据格式 {
 export type { 指令参数, 依赖数据格式 };
 
 const store = useStore();
-const 加载 = ref<boolean>(false);
+const 加载 = computed(() => store.state.加载);
 // 页面一启动生成唯一ID 用于过滤通信数据
 const uuid = 生成uuid();
 // 向子组件注入 公共方法
@@ -37,8 +36,8 @@ provide('发送指令', 发送指令);
 // 向 特定 子组件 注入属性 进行依赖收集
 const 依赖数据: 依赖数据格式[] = [];
 provide('依赖收集', 依赖数据);
-// 取本地JSON界面数据的工程ID 回显根据工程id筛选
-let 工程id: string = store.state.page.界面.projectid;
+store.dispatch('获取界面数据');
+const 工程id = computed(() => store.state.page.界面.projectid);
 // 监听websocket返回消息
 // 区分消息类型 根据不同类型解析数据
 let 初始化or更新: string = '初始化';
@@ -49,29 +48,6 @@ watch(
 		if (now) {
 			ws = 创建websocket连接(websocket地址);
 		}
-	}
-);
-// http请求(
-// 	'https://restapi.amap.com/v3/weather/weatherInfo',
-// 	{
-// 		city: '510100',
-// 		key: '671a3717cd1a6efe282a95ed7247477b',
-// 	},
-// 	{},
-// 	(res: any) => {
-// 		console.log('获取天气', res.lives[0].weather);
-// 	}
-// );
-http请求(
-	'https://restapi.amap.com/v3/weather/weatherInfo',
-	{
-		keywords: encodeURIComponent('成都'),
-		key: '671a3717cd1a6efe282a95ed7247477b',
-		subdistrict: 2,
-	},
-	{},
-	(res: any) => {
-		console.log('获取城市编码', res);
 	}
 );
 
@@ -87,7 +63,7 @@ function 发送指令(args: 指令参数) {
 		Username: store.state.user.用户名,
 		Password: store.state.user.密码,
 		cmd_type: 'ControlCommand',
-		projectid: 工程id,
+		projectid: 工程id.value,
 		rectname: args.组件名,
 		pagename: args.页面名,
 		value: [],
@@ -110,17 +86,17 @@ function 发送指令(args: 指令参数) {
 	ws.send(JSON.stringify(body));
 }
 function 创建websocket连接(url: string, reconnect_count: number = 0, max_count: number = 3) {
-	加载.value = true;
+	store.commit('set_state', { name: '加载', value: true });
 	let ws = new WebSocket(url);
 	ws.onopen = () => {
-		加载.value = false;
+		store.commit('set_state', { name: '加载', value: false });
 		消息('连接成功');
 		ws.send('hello');
 	};
 	ws.onmessage = (e: any) => {
 		let { data: data } = JSON.parse(e.data);
 		console.log('通信', data);
-		if (data.projectid === 工程id) {
+		if (data.projectid === 工程id.value) {
 			// 工程id对应才解析
 			if (初始化or更新 === '初始化') {
 				// 初始化没有uuid
@@ -142,7 +118,7 @@ function 创建websocket连接(url: string, reconnect_count: number = 0, max_cou
 		}
 	};
 	ws.onerror = () => {
-		加载.value = false;
+		store.commit('set_state', { name: '加载', value: false });
 		if (++reconnect_count <= max_count) {
 			消息(`连接失败，尝试 第${reconnect_count}次 重连`, 'error');
 			ws = 创建websocket连接(url, reconnect_count);

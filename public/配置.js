@@ -5,9 +5,8 @@
 // 因此需要在 index.html 入口文件里引用 public 目录下的文件 相当于注册到全局
 // 再在 src 下创建 .js 文件 export 导出全局变量
 // 然后就可以在 .vue 模块中 import 引入所需变量
-const 运维配置IP = '192.168.31.75';
+// const 运维配置IP = '192.168.31.75';
 
-const 运维配置端口 = '8880';
+const http端口 = '8880';
 
-// const 运维配置websocket地址 = 'ws://192.168.31.77:7998';
-const 运维配置websocket地址 = 'ws://192.168.0.111:7998';
+const websocket端口 = '7998';

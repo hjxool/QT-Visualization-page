@@ -6,7 +6,7 @@
 import { computed, defineProps, watch } from 'vue';
 import { useStore } from 'vuex';
 import 农历 from 'chinese-lunar';
-import { IP, 端口 } from '@/vue引入配置';
+import { http地址 } from '@/vue引入配置';
 import { http请求 } from '@/api/请求';
 
 // 属性
@@ -79,7 +79,7 @@ function 组件功能() {
 			}
 		}, 1000);
 	} else if (data.FontResult === '中控IP' || data.FontResult === '中控温度') {
-		http请求(`http://${IP}:${端口}/GetCofig`).then(({ data: { ip, temp } }) => {
+		http请求(`${http地址}/GetCofig`).then(({ data: { ip, temp } }) => {
 			switch (data.FontResult) {
 				case '中控IP':
 					data.RectText = ip;
