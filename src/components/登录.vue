@@ -155,6 +155,7 @@ function 缩放() {
 		width: `${data.Width}px`,
 		height: `${data.Height}px`,
 		transform: `scale(${缩放比.value.宽度比},${缩放比.value.高度比})`,
+		transformOrigin: '0% 0%',
 	};
 }
 </script>

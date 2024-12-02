@@ -28,12 +28,9 @@ window.addEventListener('resize', () => {
 // 获取当前主页面 因为变成了异步获取界面 因此监听组件树构成后再获取主页面
 const 当前主页面 = computed(() => store.state.当前主页面);
 const 组件树 = computed(() => store.state.组件树);
-watch(
-	() => 组件树,
-	(now: any) => {
-		now.length && store.commit('获取主页面');
-	}
-);
+watch(组件树, (now: any) => {
+	now.length && store.commit('获取主页面');
+});
 
 // 方法
 function 面板样式(panel: any): object {

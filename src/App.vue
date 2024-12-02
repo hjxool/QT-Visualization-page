@@ -37,7 +37,7 @@ provide('发送指令', 发送指令);
 const 依赖数据: 依赖数据格式[] = [];
 provide('依赖收集', 依赖数据);
 store.dispatch('获取界面数据');
-const 工程id = computed(() => store.state.page.界面.projectid);
+const 工程id = computed(() => store.state.工程ID);
 // 监听websocket返回消息
 // 区分消息类型 根据不同类型解析数据
 let 初始化or更新: string = '初始化';

@@ -24,12 +24,15 @@ function 文字样式() {
 		fontSize: `${data.FontSize * 缩放比.value.高度比}px`,
 		fontFamily: data.FontFormat,
 		color: data.FontColor,
-		writingMode: data.FontDirection == '横' ? 'horizontal-tb' : 'vertical-lr',
 		left: `${data.X1 * 缩放比.value.宽度比}px`,
 		top: `${data.Y1 * 缩放比.value.高度比}px`,
 		zIndex: data.zValue,
 		letterSpacing: `${data.Spacing}px`,
 	};
+	if (data.FontDirection !== '横') {
+		style['writingMode'] = 'vertical-lr';
+		style['textOrientation'] = 'upright';
+	}
 	switch (data.FontStyle) {
 		case '斜体':
 			style['fontStyle'] = 'italic';
@@ -40,8 +43,6 @@ function 文字样式() {
 		case '粗斜体':
 			style['fontStyle'] = 'italic';
 			style['fontWeight'] = 'bold';
-			break;
-		default:
 			break;
 	}
 	return style;

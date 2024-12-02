@@ -27,22 +27,16 @@ export default createStore({
       通信数据: null,
       组件树: [],
       已登录: false,
-      加载: true
+      加载: true,
+      工程ID: ''
     }
   },
   mutations: {
     set_state(state: State, args: Set_state): void {
       state[args.name] = args.value
     },
-    获取主页面(state: State, name?: string) {
-      let t: any;
-      if (name) {
-        // 指定了名称 取名字相同的数据
-        t = state.组件树?.find((e: any) => e.pagename === name);
-      } else {
-        // 没有指定名称 取第一个面板
-        t = state.组件树[0]
-      }
+    获取主页面(state: State, name: string = '首页') {
+      let t = state.组件树?.find((e: any) => e.pagename === name);
       // 保存当前面板宽度
       if (t) {
         state.面板宽度 = t.width
@@ -92,11 +86,11 @@ export default createStore({
   actions: {
     async 获取界面数据(context: any) {
       context.commit('set_state', { name: '加载', value: true });
-      let { code, data: str } = await http请求(`${http地址}/GetVisulInfo`)
+      let { code, data } = await http请求(`${http地址}/GetVisulInfo`)
       context.commit('set_state', { name: '加载', value: false });
       if (code == 200) {
-        let data = JSON.parse(str)
         console.log('获取界面数据', data)
+        context.commit('set_state', { name: '工程ID', value: data.projectid })
         context.commit('组件数据初始化', data.data)
       }
     }
