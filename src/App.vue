@@ -10,6 +10,7 @@ import main_page from './components/主页.vue';
 import { websocket地址 } from '@/vue引入配置';
 import { 消息 } from './api/消息';
 import { useStore } from 'vuex';
+import { 功能 } from '@/store/main';
 
 interface 指令参数 {
 	类型: string;
@@ -18,14 +19,7 @@ interface 指令参数 {
 	[key: string]: any;
 }
 
-interface 依赖数据格式 {
-	ID: string;
-	组件名: string;
-	页面名: string;
-	[key: string]: any;
-}
-
-export type { 指令参数, 依赖数据格式 };
+export type { 指令参数 };
 
 const store = useStore();
 const 加载 = computed(() => store.state.加载);
@@ -33,9 +27,6 @@ const 加载 = computed(() => store.state.加载);
 const uuid = 生成uuid();
 // 向子组件注入 公共方法
 provide('发送指令', 发送指令);
-// 向 特定 子组件 注入属性 进行依赖收集
-const 依赖数据: 依赖数据格式[] = [];
-provide('依赖收集', 依赖数据);
 store.dispatch('获取界面数据');
 const 工程id = computed(() => store.state.工程ID);
 // 监听websocket返回消息
@@ -71,12 +62,46 @@ function 发送指令(args: 指令参数) {
 	};
 	switch (args.类型) {
 		case '按钮':
-			order.type = 'btn'; //btn:按钮 slider:滑块 matrix：矩阵 login:登录验证
 			order.ispress = args.按下; // 0非按下 1按下 -1 ignore
-			// 如果是绑定了其他组件的按钮 则需要在依赖数据中找对应值然后下发
+			switch (args.功能类型) {
+				case 功能.下发矩阵值:
+					order.type = 'matrix';
+					for (let val of store.state.依赖数据) {
+						if (val.采集者 == args.组件名 && val.采集者所在页面 == args.页面名) {
+							// 找到依赖的矩阵数据 收集并下发
+							args.data[val.是否为输入端 ? 'input' : 'output'] = val.激活序列;
+						}
+					}
+					break;
+				case 功能.切换轮播图:
+					order.type = 'mutiimage';
+					for (let val of store.state.依赖数据) {
+						if (val.组件名 == args.目标组件 && val.页面名 == args.目标页面) {
+							// 当前按钮控的是 对应组件依赖
+							// 根据加/减 操作依赖值
+							if (args.加或减 == '加') {
+								val.当前显示 < val.total - 1 && val.当前显示++;
+							} else {
+								val.当前显示 > 0 && val.当前显示--;
+							}
+							break;
+						}
+					}
+					break;
+				default:
+					order.type = 'btn';
+					break;
+			}
 			break;
 		case '滑块':
-			order.type = 'slider';
+			switch (args.功能类型) {
+				case 功能.控制窗帘:
+					order.type = 'curtain';
+					break;
+				default:
+					order.type = 'slider';
+					break;
+			}
 			break;
 	}
 	let body = {

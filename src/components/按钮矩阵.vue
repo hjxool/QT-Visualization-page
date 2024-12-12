@@ -13,26 +13,21 @@
 </template>
 
 <script setup lang="ts">
-import { computed, inject, ref, watch } from 'vue';
+import { computed, watch } from 'vue';
 import { useStore } from 'vuex';
-import type { 依赖数据格式 } from '@/App.vue';
 
 // 属性
 const store = useStore();
 const { 组件数据: data, 页面名 } = defineProps(['组件数据', '页面名']);
 // 创建一个对象 将其地址传入 依赖收集
 // 这样在修改里面的值时 依赖数据也会跟着变
-const 依赖数据: 依赖数据格式 = {
-	ID: data.DeviceId,
-	组件名: data.name,
-	页面名,
-	激活序列: ref<number[]>([]), // 这里需要响应式 更新时 触发:style上的方法
-	是否为输入端: data.IsIput,
-};
+// const 依赖数据: 依赖数据格式 = {
+// 	激活序列: ref<number[]>([]), // 这里需要响应式 更新时 触发:style上的方法
+// };
 const 缩放比 = computed(() => store.getters.缩放比);
-// 将自身传入依赖数据中
-const 依赖收集 = inject('依赖收集') as 依赖数据格式[];
-添加到依赖();
+// 当前组件执行初始化时 已经存在于依赖数据 将其找到并在组件中响应式使用
+// 注意 这里必须要保留父级编辑激活序列 否则直接替换序列会丢失响应式
+const target = store.state.依赖数据.find((e: any) => e.组件名 == data.name && e.页面名 == 页面名);
 
 let reg = /^data\:image\/png\;base64\,/;
 if (data.BackGroundPicName_base !== 'NONE' && !reg.test(data.BackGroundPicName_base)) {
@@ -53,13 +48,13 @@ watch(
 			let result = now.data['matrix'].find((e: any) => e.pagename === 页面名 && e.rectname === data.name);
 			if (result) {
 				// 输入 取input字段 输出 取output
-				依赖数据.激活序列.value = data.IsIput ? result['input'] : result['output'];
+				target.激活序列 = data.IsIput ? result['input'] : result['output'];
 			}
 		} else if (now.类型 === '更新') {
 			let result = now.data['values'].find((e: any) => e.pagename === 页面名 && e.rectname === data.name);
 			if (result) {
 				// 存在 则取外层 input 或 output字段值
-				依赖数据.激活序列.value = data.IsIput ? now.data['input'] : now.data['output'];
+				target.激活序列 = data.IsIput ? now.data['input'] : now.data['output'];
 			}
 		}
 	}
@@ -76,10 +71,10 @@ function 栅格布局() {
 }
 function 按钮样式(num: number) {
 	return {
-		borderColor: 依赖数据.激活序列.value.indexOf(num) == -1 ? data.RectColor : data.ActiveRectColor,
+		borderColor: target.激活序列.indexOf(num) == -1 ? data.RectColor : data.ActiveRectColor,
 		borderWidth: `${data.RectWidth}px`,
 		borderStyle: 'solid',
-		color: 依赖数据.激活序列.value.indexOf(num) == -1 ? data.FontColor : data.ActiveFontColor,
+		color: target.激活序列.indexOf(num) == -1 ? data.FontColor : data.ActiveFontColor,
 		fontSize: `${data.FontSize * 缩放比.value.高度比}px`,
 	};
 }
@@ -89,10 +84,10 @@ function 按钮背景(type: string, num: number) {
 	};
 	switch (type) {
 		case '纯色':
-			style['background'] = 依赖数据.激活序列.value.indexOf(num) == -1 ? data.GroundColor : data.ActiveGroundcolor;
+			style['background'] = target.激活序列.indexOf(num) == -1 ? data.GroundColor : data.ActiveGroundcolor;
 			break;
 		case '图片':
-			if (依赖数据.激活序列.value.indexOf(num) == -1) {
+			if (target.激活序列.indexOf(num) == -1) {
 				// 非激活
 				if (data.PictureNme_base !== 'NONE') {
 					style['backgroundImage'] = `url(${data.PictureNme_base})`;
@@ -109,14 +104,14 @@ function 按钮背景(type: string, num: number) {
 			}
 			break;
 		case '双色水平渐变':
-			if (依赖数据.激活序列.value.indexOf(num) == -1) {
+			if (target.激活序列.indexOf(num) == -1) {
 				style['background'] = `linear-gradient(to right, ${data.GroundColor}, ${data.GroundColor2})`;
 			} else {
 				style['background'] = `linear-gradient(to right, ${data.ActiveGroundcolor}, ${data.ActiveGroundcolor2})`;
 			}
 			break;
 		case '双色垂直渐变':
-			if (依赖数据.激活序列.value.indexOf(num) == -1) {
+			if (target.激活序列.indexOf(num) == -1) {
 				style['background'] = `linear-gradient(${data.GroundColor}, ${data.GroundColor2})`;
 			} else {
 				style['background'] = `linear-gradient(${data.ActiveGroundcolor}, ${data.ActiveGroundcolor2})`;
@@ -125,20 +120,13 @@ function 按钮背景(type: string, num: number) {
 	}
 	return style;
 }
-function 添加到依赖() {
-	let result = 依赖收集.find((e: 依赖数据格式) => e.ID == data.DeviceId && e.组件名 == data.name && e.页面名 == 页面名);
-	if (!result) {
-		// 不存在则添加
-		依赖收集.push(依赖数据);
-	}
-}
 function 点击(num: number) {
 	if (data.IsIput) {
 		// 输入 只能激活一个按钮
-		依赖数据.激活序列.value = [num];
+		target.激活序列 = [num];
 	} else {
 		// 输出可以多个一起点亮
-		依赖数据.激活序列.value.indexOf(num) == -1 && 依赖数据.激活序列.value.push(num);
+		target.激活序列.indexOf(num) == -1 && target.激活序列.push(num);
 	}
 }
 </script>

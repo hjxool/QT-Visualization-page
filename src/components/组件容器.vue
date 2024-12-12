@@ -2,19 +2,23 @@
 	<div>
 		<!-- 普通组件 -->
 		<template v-for="item in 面板数据.data">
-			<cus-button v-if="item.property === 3" class="component" :组件数据="item" :跳转子容器="显示子容器" :互锁="互锁" :切换激活="切换激活" :页面名="面板数据.pagename" :style="通用组件样式(item)" />
+			<cus-button v-if="item.property == 3" class="component" :组件数据="item" :跳转子容器="显示子容器" :互锁="互锁" :切换激活="切换激活" :页面名="面板数据.pagename" :style="通用组件样式(item)" />
 
-			<cus-img v-if="item.property === 5" class="component" :组件数据="item" :style="通用组件样式(item)" />
+			<cus-img v-if="item.property == 5" class="component" :组件数据="item" :style="通用组件样式(item)" />
 
-			<cus-text v-if="item.property === 12 || item.property === 4" class="component" :组件数据="item" :页面名="面板数据.pagename" />
+			<cus-text v-if="item.property == 12 || item.property === 4" class="component" :组件数据="item" :页面名="面板数据.pagename" />
 
-			<cus-slider v-if="item.property === 7" class="component" :组件数据="item" :页面名="面板数据.pagename" :style="通用组件样式(item)" />
+			<cus-slider v-if="item.property == 7" class="component" :组件数据="item" :页面名="面板数据.pagename" :style="通用组件样式(item)" />
 
-			<cus-login v-if="item.property === 22" class="component" :组件数据="item" />
+			<cus-login v-if="item.property == 22" class="component" :组件数据="item" />
 
-			<cus-button-matrix v-if="item.property === 18" class="component" :组件数据="item" :页面名="面板数据.pagename" :style="通用组件样式(item)" />
+			<cus-button-matrix v-if="item.property == 18" class="component" :组件数据="item" :页面名="面板数据.pagename" :style="通用组件样式(item)" />
 
-			<container v-if="item.property === 8" v-show="item.ShowPage === 子容器" class="component container" :面板数据="item" :style="面板样式(item)"></container>
+			<container v-if="item.property == 8" v-show="item.ShowPage === 子容器" class="component container" :面板数据="item" :style="面板样式(item)"></container>
+
+			<cus-curtain v-if="item.property == 25" class="component" :组件数据="item" :页面名="面板数据.pagename" :style="通用组件样式(item)" />
+
+			<cus-scroll-img v-if="item.property == 26" class="component" :组件数据="item" :页面名="面板数据.pagename" :style="通用组件样式(item)" />
 		</template>
 	</div>
 </template>
@@ -29,6 +33,8 @@ import cusText from './文本.vue';
 import cusLogin from './登录.vue';
 import cusSlider from './滑块.vue';
 import cusButtonMatrix from './按钮矩阵.vue';
+import cusCurtain from './窗帘.vue';
+import cusScrollImg from './轮播图.vue';
 
 onMounted(() => {
 	初始化互锁组件状态();
@@ -58,6 +64,7 @@ function 显示子容器(name?: string, 互锁组?: string): void {
 	if (name) {
 		// 有跳转目标name 一定有互锁组
 		子容器.value = name;
+		// 关闭所有附页时传递过来的值不会改变互锁
 		if (互锁组 && 互锁组 !== 'NONE') {
 			互锁.value = {
 				互锁组,

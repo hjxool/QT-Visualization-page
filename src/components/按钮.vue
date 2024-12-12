@@ -1,15 +1,7 @@
 <template>
 	<div class="button center" @mousedown="按下()" @mouseup="抬起()" :style="按钮样式()">
-		{{ data.RectText }}
-		<template v-if="激活">
-			<img v-if="data.ActivePictureName_base != 'NONE'" class="bg_img" :src="data.ActivePictureName_base" />
-			<div v-else class="bg_img" :style="{ background: data.ActiveGroundcolor }"></div>
-		</template>
-
-		<template v-else>
-			<img v-if="data.PictureNme_base != 'NONE'" class="bg_img" :src="data.PictureNme_base" />
-			<div v-else class="bg_img" :style="{ background: data.GroundColor }"></div>
-		</template>
+		<span>{{ data.RectText }}</span>
+		<div class="bg_img" :style="按钮背景()"></div>
 	</div>
 </template>
 
@@ -17,6 +9,7 @@
 import { computed, defineProps, inject, ref, watch } from 'vue';
 import { useStore } from 'vuex';
 import type { 指令参数 } from '@/App.vue';
+import { 功能 } from '@/store/main';
 
 // 属性
 const store = useStore();
@@ -87,67 +80,85 @@ if (data.PictureNme_base !== 'NONE' && !reg.test(data.PictureNme_base)) {
 	data.PictureNme_base = `data:image/png;base64,${data.PictureNme_base}`;
 }
 
+// 区分按钮功能类型
+const 功能类型 = data.Data.split(';')[0];
+
 // 方法
 function 按下() {
 	// 区分是否自锁 自锁非激活只下发按下 抬起不下发 激活只在抬起时下发
-	if (data.Data === '130') {
-		// 表示双发按钮
-		// 只要按下就进入激活状态
-		激活.value = true;
-		// 不论是否跳转都下发指令
-		指令参数(1);
-	} else {
-		// 其他为单发按钮
-		if (data.BtnEffect === '自锁') {
-			if (激活.value) {
-				// 激活时 按下下发抬起指令
-				激活.value = false;
-			} else {
-				// 非激活时 按下发送按下的指令
-				激活.value = true;
-			}
-		} else {
+	switch (功能类型) {
+		case '130':
+			// 表示双发按钮
+			// 只要按下就进入激活状态
 			激活.value = true;
-			switch (跳转类型) {
-				case '主页面':
-					// 跳转主页 直接修改全局属性
-					store.commit('获取主页面', data.JumpToPage);
-					break;
-				case '附页':
-					// 跳转附页 向自身父组件发送消息 修改父组件的子容器
-					// 给其他互锁按钮发送消息 取消其他按钮的激活状态
-					跳转子容器(data.JumpToPage, data.Interlock);
-					break;
-				case '不跳转':
-					// 不跳转 但有可能与其他按钮为互锁
-					if (data.Interlock && data.Interlock !== 'NONE') {
-						// 存在互锁组 且 不跳转
-						切换激活(data.Interlock, data.name);
-					}
-					break;
+			// 不论是否跳转都下发指令
+			指令参数(1);
+			break;
+		case '125':
+			// 关闭所有附页
+			激活.value = true;
+			指令参数(1);
+			跳转子容器(data.JumpToPage, data.Interlock);
+			break;
+		default:
+			// 其他为单发按钮
+			if (data.BtnEffect === '自锁') {
+				if (激活.value) {
+					// 激活时 按下下发抬起指令
+					激活.value = false;
+				} else {
+					// 非激活时 按下发送按下的指令
+					激活.value = true;
+				}
+			} else {
+				激活.value = true;
+				switch (跳转类型) {
+					case '主页面':
+						// 跳转主页 直接修改全局属性
+						store.commit('获取主页面', data.JumpToPage);
+						break;
+					case '附页':
+						// 跳转附页 向自身父组件发送消息 修改父组件的子容器
+						// 给其他互锁按钮发送消息 取消其他按钮的激活状态
+						跳转子容器(data.JumpToPage, data.Interlock);
+						break;
+					case '不跳转':
+						// 不跳转 但有可能与其他按钮为互锁
+						if (data.Interlock && data.Interlock !== 'NONE') {
+							// 存在互锁组 且 不跳转
+							切换激活(data.Interlock, data.name);
+						}
+						break;
+				}
 			}
-		}
-		指令参数(-1);
+			指令参数(-1);
+			break;
 	}
 }
 function 抬起() {
-	if (data.Data === '130') {
-		激活.value = false;
-		指令参数(0);
-	} else {
-		if (data.BtnEffect !== '自锁') {
-			switch (跳转类型) {
-				case '主页面':
-					激活.value = false;
-					break;
-				case '不跳转':
-					// 不跳转 且 没有互锁 抬起时还原
-					if (!data.Interlock || data.Interlock === 'NONE') {
+	switch (功能类型) {
+		case '130':
+			激活.value = false;
+			指令参数(0);
+			break;
+		case '125':
+			激活.value = false;
+			break;
+		default:
+			if (data.BtnEffect !== '自锁') {
+				switch (跳转类型) {
+					case '主页面':
 						激活.value = false;
-					}
-					break;
+						break;
+					case '不跳转':
+						// 不跳转 且 没有互锁 抬起时还原
+						if (!data.Interlock || data.Interlock === 'NONE') {
+							激活.value = false;
+						}
+						break;
+				}
 			}
-		}
+			break;
 	}
 }
 function 查询跳转页类型(): string {
@@ -157,33 +168,40 @@ function 查询跳转页类型(): string {
 	// JSON.parse(store.state.源数据)
 	let queue = [...store.state.组件树];
 	while (queue.length) {
-		let size: number = queue.length;
-		while (size--) {
-			let node = queue.shift();
-			if (node.pagename === data.JumpToPage) {
-				// 找到 返回结果
-				// 注意 只有组件树最外层才是主页面 所以没有ismainpage字段就是附页
-				return node.ismainpage ? '主页面' : '附页';
-			}
-			// 没找到 将子节点放入队列
-			for (let val of node.data || []) {
-				if (val.RectText === 'PAGECONTAINER') {
-					queue.push(val);
-				}
+		let node = queue.shift();
+		if (node.pagename === data.JumpToPage) {
+			// 找到 返回结果
+			// 注意 只有组件树最外层才是主页面 所以没有ismainpage字段就是附页
+			return node.ismainpage ? '主页面' : '附页';
+		}
+		// 没找到 将子节点放入队列
+		for (let val of node.data || []) {
+			if (val.RectText === 'PAGECONTAINER') {
+				queue.push(val);
 			}
 		}
 	}
 	return '不跳转';
 }
 function 指令参数(按下: number) {
+	let body: any = {
+		类型: '按钮',
+		组件名: data.name,
+		页面名,
+		按下: 按下,
+		data: {},
+	};
+	if (data.Data.length) {
+		let t = data.Data.split(';');
+		body['功能类型'] = t[0];
+		if (body['功能类型'] == 功能.切换轮播图) {
+			body['加或减'] = t[3] == 1 ? '加' : '减';
+			body['目标页面'] = t[1];
+			body['目标组件'] = t[2];
+		}
+	}
 	setTimeout(() => {
-		发送指令({
-			类型: '按钮',
-			组件名: data.name,
-			页面名,
-			按下: 按下,
-			data: {},
-		});
+		发送指令(body);
 	}, data.LateTime * 1000);
 }
 function 按钮样式() {
@@ -195,6 +213,48 @@ function 按钮样式() {
 		borderWidth: `${data.RectWidth}px`,
 		borderStyle: 'solid',
 	};
+}
+function 按钮背景() {
+	let style: any = {
+		opacity: Math.round((data.ViseValue / 255) * 100) / 100,
+	};
+	switch (data.ButtonMode) {
+		case '纯色':
+			style['background'] = 激活.value ? data.ActiveGroundcolor : data.GroundColor;
+			break;
+		case '图片':
+			if (激活.value) {
+				// 激活
+				if (data.ActivePictureName_base !== 'NONE') {
+					style['backgroundImage'] = `url(${data.ActivePictureName_base})`;
+				} else {
+					style['background'] = data.ActiveGroundcolor;
+				}
+			} else {
+				// 非激活
+				if (data.PictureNme_base !== 'NONE') {
+					style['backgroundImage'] = `url(${data.PictureNme_base})`;
+				} else {
+					style['background'] = data.GroundColor;
+				}
+			}
+			break;
+		case '双色水平渐变':
+			if (激活.value) {
+				style['background'] = `linear-gradient(to right, ${data.ActiveGroundcolor}, ${data.ActiveGroundcolor2})`;
+			} else {
+				style['background'] = `linear-gradient(to right, ${data.GroundColor}, ${data.GroundColor2})`;
+			}
+			break;
+		case '双色垂直渐变':
+			if (激活.value) {
+				style['background'] = `linear-gradient(${data.ActiveGroundcolor}, ${data.ActiveGroundcolor2})`;
+			} else {
+				style['background'] = `linear-gradient(${data.GroundColor}, ${data.GroundColor2})`;
+			}
+			break;
+	}
+	return style;
 }
 </script>
 

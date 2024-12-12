@@ -1,6 +1,6 @@
 <template>
 	<div :class="[data.ScrollDirect == '横' ? 'row_layout' : 'center']">
-		<el-slider v-model="值" :min="最小值" :max="最大值" :step="步长" :marks="生成刻度值()" v-bind="动态属性" @input="下发指令()" />
+		<el-slider v-model="target.值" :min="最小值" :max="最大值" :step="步长" :marks="生成刻度值()" v-bind="动态属性" @input="下发指令()" />
 	</div>
 </template>
 
@@ -8,6 +8,7 @@
 import { ref, defineProps, computed, inject, watch } from 'vue';
 import { useStore } from 'vuex';
 import type { 指令参数 } from '@/App.vue';
+import { 功能 } from '@/store/main';
 
 interface Marks {
 	[key: number]: string;
@@ -22,7 +23,12 @@ interface Marks {
 const store = useStore();
 const { 组件数据: data, 页面名 } = defineProps(['组件数据', '页面名']);
 const 缩放比 = computed(() => store.getters.缩放比);
-const 值 = ref<number>(data.SliderMin);
+// 找自己
+let target = store.state.依赖数据.find((e: any) => e.组件名 == data.name && e.页面名 == 页面名);
+if (!target) {
+	// 滑块不一定绑定了其他组件 就不会添加到依赖 因此构造新的值
+	target = ref({ 值: data.SliderMin });
+}
 const 最小值 = ref<number>(data.SliderMin);
 const 最大值 = ref<number>(data.SliderMax);
 const 步长 = ref<number>(计算步长());
@@ -34,12 +40,12 @@ watch(
 		if (now.类型 === '初始化') {
 			let result = now.data['slider'].find((e: any) => e.pagename === 页面名 && e.rectname === data.name);
 			if (result) {
-				值.value = parseFloat(result.value);
+				target.值 = parseFloat(result.value);
 			}
 		} else if (now.类型 === '更新') {
 			let result = now.data['values'].find((e: any) => e.pagename === 页面名 && e.rectname === data.name);
 			if (result) {
-				值.value = parseFloat(result.value[0]);
+				target.值 = parseFloat(result.value[0]);
 			}
 		}
 	}
@@ -63,14 +69,23 @@ function 生成刻度值(): Marks {
 	};
 }
 function 下发指令() {
-	发送指令({
+	let body: any = {
 		类型: '滑块',
 		组件名: data.name,
 		页面名,
 		data: {
-			value: [值.value],
+			value: [target.值],
 		},
-	});
+	};
+	if (data.device.length) {
+		let t = data.device.split(';');
+		body['功能类型'] = t[0];
+		if (body['功能类型'] == 功能.控制窗帘) {
+			let 百分比 = ((target.值 - 最小值.value) / (最大值.value - 最小值.value)) * 100;
+			body.data.value = [百分比];
+		}
+	}
+	发送指令(body);
 }
 function 计算步长(): number {
 	// data.LevelCount 表示全程滑动次数

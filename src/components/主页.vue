@@ -13,9 +13,9 @@ import container from './组件容器.vue';
 // 属性
 const store = useStore();
 // 添加浏览器视窗变化事件监听
-window.addEventListener('resize', () => {
-	获取视窗宽度();
-});
+// window.addEventListener('resize', () => {
+// 	获取视窗宽度();
+// });
 获取视窗宽度();
 
 // 计算属性返回的是ref对象 因此先要对value解构
@@ -23,7 +23,7 @@ window.addEventListener('resize', () => {
 // const {
 // 	value: { 缩放比 },
 // } = computed(() => store.getters);
-// const 缩放比 = computed(() => store.getters.缩放比);
+const 缩放比 = computed(() => store.getters.缩放比);
 
 // 获取当前主页面 因为变成了异步获取界面 因此监听组件树构成后再获取主页面
 const 当前主页面 = computed(() => store.state.当前主页面);
@@ -31,12 +31,15 @@ const 组件树 = computed(() => store.state.组件树);
 watch(组件树, (now: any) => {
 	now.length && store.commit('获取主页面');
 });
+store.commit('获取主页面');
 
 // 方法
 function 面板样式(panel: any): object {
-	// let h = panel.height * 缩放比.value.高度比;
+	let h = panel.height * 缩放比.value.高度比;
+	let w = panel.width * 缩放比.value.宽度比;
 	return {
-		// height: h + 'px',
+		height: `${h}px`,
+		width: `${w}px`,
 		background: panel.grondcolor,
 	};
 }
@@ -53,13 +56,13 @@ function 获取视窗宽度() {
 .root {
 	width: 100%;
 	height: 100%;
-	overflow: hidden;
+	overflow: auto;
 	padding: 0;
 	margin: 0;
 }
 .mb {
 	position: relative;
-	width: 100%;
-	height: 100%;
+	// width: 100%;
+	// height: 100%;
 }
 </style>

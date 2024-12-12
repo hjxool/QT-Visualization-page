@@ -5,7 +5,7 @@
 		<div v-else class="bg_img" :style="{ background: data.loginbackgroundcolor }"></div>
 		<!-- 表单 -->
 		<div class="scroll">
-			<el-form :model="form" :rules="rules" ref="表单对象" label-width="auto" label-position="right">
+			<el-form class="表单" :model="form" :rules="rules" ref="表单对象" label-width="auto" label-position="right">
 				<el-form-item label="用户名" prop="用户名">
 					<el-input v-model="form.用户名" />
 				</el-form-item>
@@ -27,7 +27,7 @@
 				</el-form-item>
 
 				<div class="row_layout check">
-					<div class="row_layout" @click="form.记住账号 = !form.记住账号">
+					<div class="勾选 row_layout" @click="form.记住账号 = !form.记住账号">
 						<div class="icon">
 							<img v-show="!form.记住账号" class="bg_img" src="/img/未勾选.png" />
 							<img v-show="form.记住账号" class="bg_img" src="/img/勾选.png" />
@@ -36,7 +36,7 @@
 						<span>记住账号</span>
 					</div>
 
-					<div class="row_layout" @click="form.记住密码 = !form.记住密码">
+					<div class="勾选 row_layout" @click="form.记住密码 = !form.记住密码">
 						<div class="icon">
 							<img v-show="!form.记住密码" class="bg_img" src="/img/未勾选.png" />
 							<img v-show="form.记住密码" class="bg_img" src="/img/勾选.png" />
@@ -55,7 +55,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, defineProps, onMounted, ref } from 'vue';
+import { computed, defineProps, inject, onMounted, ref } from 'vue';
 import { http地址 } from '@/vue引入配置';
 import type { FormInstance } from 'element-plus';
 import { http请求 } from '@/api/请求';
@@ -182,5 +182,14 @@ function 缩放() {
 .check {
 	justify-content: space-evenly;
 	margin: 18px 0;
+}
+.表单 {
+	height: 100%;
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between;
+}
+.勾选 {
+	cursor: pointer;
 }
 </style>
