@@ -32,12 +32,12 @@ const 工程id = computed(() => store.state.工程ID);
 // 监听websocket返回消息
 // 区分消息类型 根据不同类型解析数据
 let 初始化or更新: string = '初始化';
-let ws: WebSocket;
+let link: WebSocket;
 watch(
 	() => store.state.已登录,
 	(now: boolean) => {
 		if (now) {
-			ws = 创建websocket连接(websocket地址);
+			创建websocket连接(websocket地址);
 		}
 	}
 );
@@ -108,17 +108,30 @@ function 发送指令(args: 指令参数) {
 		data: { ...order, ...args.data },
 	};
 	console.log('发送指令', body);
-	ws.send(JSON.stringify(body));
+	link.send(JSON.stringify(body));
 }
 function 创建websocket连接(url: string, reconnect_count: number = 0, max_count: number = 3) {
 	store.commit('set_state', { name: '加载', value: true });
-	let ws = new WebSocket(url);
-	ws.onopen = () => {
+	link = new WebSocket(url);
+	// 连接只会成功或失败
+	link.onopen = () => {
 		store.commit('set_state', { name: '加载', value: false });
 		消息('连接成功');
-		ws.send('hello');
+		link.send('hello');
+		// 连接成功 重置重试次数
+		reconnect_count = 0;
 	};
-	ws.onmessage = (e: any) => {
+	link.onerror = () => {
+		store.commit('set_state', { name: '加载', value: false });
+		if (++reconnect_count <= max_count) {
+			消息(`连接失败，尝试 第${reconnect_count}次 重连`, 'error');
+			创建websocket连接(url, reconnect_count);
+		} else {
+			消息('重连失败', 'error');
+		}
+	};
+	// 成功后才有 onmessage 和 onclose
+	link.onmessage = (e: any) => {
 		let { data: data } = JSON.parse(e.data);
 		console.log('通信', data);
 		if (data.projectid === 工程id.value) {
@@ -142,16 +155,14 @@ function 创建websocket连接(url: string, reconnect_count: number = 0, max_cou
 			}
 		}
 	};
-	ws.onerror = () => {
-		store.commit('set_state', { name: '加载', value: false });
+	link.onclose = () => {
 		if (++reconnect_count <= max_count) {
-			消息(`连接失败，尝试 第${reconnect_count}次 重连`, 'error');
-			ws = 创建websocket连接(url, reconnect_count);
+			消息(`通信中断，尝试 第${reconnect_count}次 重连`, 'error');
+			创建websocket连接(url, reconnect_count);
 		} else {
 			消息('重连失败', 'error');
 		}
 	};
-	return ws;
 }
 function 生成uuid(): string {
 	// 基于 时间戳 和 随机数 组合生成

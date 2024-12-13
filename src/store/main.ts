@@ -4,7 +4,7 @@ import { http请求 } from "@/api/请求"
 import { http地址 } from "@/vue引入配置";
 
 // 测试
-// import 测试数据 from './中控测试.json'
+// import 测试数据 from './测试3.json'
 
 interface State {
   [key: string]: any, // 允许其他任意属性的写法

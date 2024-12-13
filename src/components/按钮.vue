@@ -1,6 +1,6 @@
 <template>
 	<div class="button center" @mousedown="按下()" @mouseup="抬起()" :style="按钮样式()">
-		<span>{{ data.RectText }}</span>
+		<span>{{ 激活 ? data.ActiveRectText : data.RectText }}</span>
 		<div class="bg_img" :style="按钮背景()"></div>
 	</div>
 </template>
@@ -51,14 +51,14 @@ if (data.BtnEffect === '互锁' || data.BtnEffect === '自锁') {
 			if (now.类型 === '初始化') {
 				let result = now.data['btn'].find((e: any) => e.pagename === 页面名 && e.rectname === data.name);
 				if (result) {
-					激活.value = result.ispress === 1;
+					激活.value = result.ispress == 1;
 				}
 			} else if (now.类型 === '更新') {
 				// 先找是否存在于values中
 				let result = now.data['values'].find((e: any) => e.pagename === 页面名 && e.rectname === data.name);
 				if (result) {
 					// 存在 则取外层 ispress字段值
-					激活.value = now.data['ispress'] === 1;
+					激活.value = now.data['ispress'] == 1;
 				}
 			}
 		}
@@ -102,36 +102,24 @@ function 按下() {
 			break;
 		default:
 			// 其他为单发按钮
-			if (data.BtnEffect === '自锁') {
-				if (激活.value) {
-					// 激活时 按下下发抬起指令
-					激活.value = false;
-				} else {
-					// 非激活时 按下发送按下的指令
+			switch (data.BtnEffect) {
+				case '自锁':
+					if (激活.value) {
+						// 激活时 按下下发抬起指令
+						激活.value = false;
+						指令参数(0);
+					} else {
+						// 非激活时 按下发送按下的指令
+						激活.value = true;
+						指令参数(1);
+					}
+					break;
+				case '互锁':
+				default:
 					激活.value = true;
-				}
-			} else {
-				激活.value = true;
-				switch (跳转类型) {
-					case '主页面':
-						// 跳转主页 直接修改全局属性
-						store.commit('获取主页面', data.JumpToPage);
-						break;
-					case '附页':
-						// 跳转附页 向自身父组件发送消息 修改父组件的子容器
-						// 给其他互锁按钮发送消息 取消其他按钮的激活状态
-						跳转子容器(data.JumpToPage, data.Interlock);
-						break;
-					case '不跳转':
-						// 不跳转 但有可能与其他按钮为互锁
-						if (data.Interlock && data.Interlock !== 'NONE') {
-							// 存在互锁组 且 不跳转
-							切换激活(data.Interlock, data.name);
-						}
-						break;
-				}
+					指令参数(-1);
+					break;
 			}
-			指令参数(-1);
 			break;
 	}
 }
@@ -145,18 +133,34 @@ function 抬起() {
 			激活.value = false;
 			break;
 		default:
-			if (data.BtnEffect !== '自锁') {
-				switch (跳转类型) {
-					case '主页面':
-						激活.value = false;
-						break;
-					case '不跳转':
-						// 不跳转 且 没有互锁 抬起时还原
-						if (!data.Interlock || data.Interlock === 'NONE') {
+			switch (data.BtnEffect) {
+				case '自锁':
+					break;
+				case '互锁':
+				default:
+					switch (跳转类型) {
+						case '主页面':
 							激活.value = false;
-						}
-						break;
-				}
+							// 跳转主页 直接修改全局属性
+							store.commit('获取主页面', data.JumpToPage);
+							break;
+						case '附页':
+							// 跳转附页 向自身父组件发送消息 修改父组件的子容器
+							// 给其他互锁按钮发送消息 取消其他按钮的激活状态
+							跳转子容器(data.JumpToPage, data.Interlock);
+							break;
+						case '不跳转':
+							// 不跳转 但有可能与其他按钮为互锁
+							if (data.Interlock === 'NONE') {
+								// 不跳转 且 没有互锁 抬起时还原
+								激活.value = false;
+							} else {
+								// 存在互锁组 且 不跳转
+								切换激活(data.Interlock, data.name);
+							}
+							break;
+					}
+					break;
 			}
 			break;
 	}
@@ -205,7 +209,7 @@ function 指令参数(按下: number) {
 	}, data.LateTime * 1000);
 }
 function 按钮样式() {
-	return {
+	let style: any = {
 		color: 激活.value ? data.ActiveFontColor : data.FontColor,
 		fontSize: `${data.FontSize * 缩放比.value.高度比}px`,
 		fontFamily: data.FontFormat,
@@ -213,6 +217,19 @@ function 按钮样式() {
 		borderWidth: `${data.RectWidth}px`,
 		borderStyle: 'solid',
 	};
+	switch (data.FontStyle) {
+		case '斜体':
+			style['fontStyle'] = 'italic';
+			break;
+		case '粗体':
+			style['fontWeight'] = 'bold';
+			break;
+		case '粗斜体':
+			style['fontStyle'] = 'italic';
+			style['fontWeight'] = 'bold';
+			break;
+	}
+	return style;
 }
 function 按钮背景() {
 	let style: any = {
