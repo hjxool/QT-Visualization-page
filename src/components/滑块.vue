@@ -5,7 +5,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, defineProps, computed, inject, watch } from 'vue';
+import { ref, defineProps, computed, inject, watch, reactive } from 'vue';
 import { useStore } from 'vuex';
 import type { 指令参数 } from '@/App.vue';
 import { 功能 } from '@/store/main';
@@ -27,7 +27,7 @@ const 缩放比 = computed(() => store.getters.缩放比);
 let target = store.state.依赖数据.find((e: any) => e.组件名 == data.name && e.页面名 == 页面名);
 if (!target) {
 	// 滑块不一定绑定了其他组件 就不会添加到依赖 因此构造新的值
-	target = ref({ 值: data.SliderMin });
+	target = reactive({ 值: data.SliderMin }); // 必须用reactive 否则下面要用target.value.值
 }
 const 最小值 = ref<number>(data.SliderMin);
 const 最大值 = ref<number>(data.SliderMax);
