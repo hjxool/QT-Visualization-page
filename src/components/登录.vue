@@ -94,9 +94,11 @@ const form = ref<Form>({
 	密码: '',
 	通信IP: '',
 	语言: '中文',
-	记住账号: store.state.记住账号,
-	记住密码: store.state.记住密码,
+	// 表单上交互并不直接存到全局 而是等提交登录验证过时再存 然后根据全局变量决定是否回显存的值
+	记住账号: store.state.user.记住账号,
+	记住密码: store.state.user.记住密码,
 });
+
 // 验证规则
 const rules = ref({
 	用户名: [{ required: true, message: '用户名不能为空', trigger: 'blur' }],
@@ -131,9 +133,11 @@ function 登录(formRef: FormInstance) {
 			if (res.code == 200) {
 				// 登陆成功 根据组件的JumpToPage跳转对应主页面
 				消息(`欢迎 ${form.value.用户名}`);
-				// 登陆成功后 根据勾选记住项 存到全局变量
-				form.value.记住账号 && store.commit('user/set_state', { name: '记住账号', value: form.value.用户名 });
-				form.value.记住密码 && store.commit('user/set_state', { name: '记住密码', value: form.value.密码 });
+				// 登陆成功后 存到全局变量
+				store.commit('user/set_state', { name: '记住账号', value: form.value.记住账号 });
+				store.commit('user/set_state', { name: '记住密码', value: form.value.记住密码 });
+				store.commit('user/set_state', { name: '用户名', value: form.value.用户名 });
+				store.commit('user/set_state', { name: '密码', value: form.value.密码 });
 				store.commit('获取主页面', data.JumpToPage);
 				store.commit('set_state', { name: '已登录', value: true });
 			} else {
@@ -144,8 +148,8 @@ function 登录(formRef: FormInstance) {
 	});
 }
 function 表单初始化() {
-	form.value.记住账号 && (form.value.用户名 = store.state.user.用户名);
-	form.value.记住密码 && (form.value.密码 = store.state.user.密码);
+	store.state.user.记住账号 && (form.value.用户名 = store.state.user.用户名);
+	store.state.user.记住密码 && (form.value.密码 = store.state.user.密码);
 }
 function 缩放() {
 	return {

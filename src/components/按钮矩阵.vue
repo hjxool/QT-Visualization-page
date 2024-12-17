@@ -41,24 +41,31 @@ if (data.ButtonMode == '图片') {
 		data.PictureNme_base = `data:image/png;base64,${data.PictureNme_base}`;
 	}
 }
-watch(
-	() => store.state.通信数据,
-	(now: { 类型: string; data: any }) => {
-		if (now.类型 === '初始化') {
-			let result = now.data['matrix'].find((e: any) => e.pagename === 页面名 && e.rectname === data.name);
-			if (result) {
-				// 输入 取input字段 输出 取output
-				target.激活序列 = data.IsIput ? result['input'] : result['output'];
-			}
-		} else if (now.类型 === '更新') {
-			let result = now.data['values'].find((e: any) => e.pagename === 页面名 && e.rectname === data.name);
-			if (result) {
-				// 存在 则取外层 input 或 output字段值
-				target.激活序列 = data.IsIput ? now.data['input'] : now.data['output'];
+
+// 只有输入矩阵能接收到数据上报 然后根据输入矩阵相同采集者找输出矩阵依赖 更新输出矩阵
+if (data.IsIput) {
+	watch(
+		() => store.state.通信数据,
+		(now: { 类型: string; data: any }) => {
+			if (now.类型 === '初始化') {
+				let result = now.data['matrix'].find((e: any) => e.pagename === 页面名 && e.rectname === data.name);
+				if (result) {
+					target.激活序列 = result['input'].map((num: string) => parseInt(num));
+					// 找到对应输出端 同一个采集者 且 为输出
+					let 输出端 = store.state.依赖数据.find((e: any) => e.采集者 == target.采集者 && e.采集者所在页面 == target.采集者所在页面 && e.是否为输入端 === false);
+					输出端 && (输出端.激活序列 = result['output'].map((num: string) => parseInt(num)));
+				}
+			} else if (now.类型 === '更新') {
+				let result = now.data['values'].find((e: any) => e.pagename === 页面名 && e.rectname === data.name);
+				if (result) {
+					target.激活序列 = now.data['input'].map((num: string) => parseInt(num));
+					let 输出端 = store.state.依赖数据.find((e: any) => e.采集者 == target.采集者 && e.采集者所在页面 == target.采集者所在页面 && e.是否为输入端 === false);
+					输出端 && (输出端.激活序列 = now.data['output'].map((num: string) => parseInt(num)));
+				}
 			}
 		}
-	}
-);
+	);
+}
 
 // 方法
 function 栅格布局() {
@@ -126,7 +133,10 @@ function 点击(num: number) {
 		target.激活序列 = [num];
 	} else {
 		// 输出可以多个一起点亮
-		target.激活序列.indexOf(num) == -1 && target.激活序列.push(num);
+		if (target.激活序列.indexOf(num) == -1) {
+			target.激活序列.push(num);
+			target.激活序列 = target.激活序列.sort();
+		}
 	}
 }
 </script>

@@ -10,10 +10,8 @@ import main_page from './components/主页.vue';
 import { websocket地址 } from '@/vue引入配置';
 import { 消息 } from './api/消息';
 import { useStore } from 'vuex';
-import { 功能 } from '@/store/main';
 
 interface 指令参数 {
-	类型: string;
 	组件名: string;
 	页面名: string;
 	[key: string]: any;
@@ -58,52 +56,9 @@ function 发送指令(args: 指令参数) {
 		rectname: args.组件名,
 		pagename: args.页面名,
 		value: [],
-		ispress: -1,
+		ispress: args.ispress,
+		type: args.type,
 	};
-	switch (args.类型) {
-		case '按钮':
-			order.ispress = args.按下; // 0非按下 1按下 -1 ignore
-			switch (args.功能类型) {
-				case 功能.下发矩阵值:
-					order.type = 'matrix';
-					for (let val of store.state.依赖数据) {
-						if (val.采集者 == args.组件名 && val.采集者所在页面 == args.页面名) {
-							// 找到依赖的矩阵数据 收集并下发
-							args.data[val.是否为输入端 ? 'input' : 'output'] = val.激活序列;
-						}
-					}
-					break;
-				case 功能.切换轮播图:
-					order.type = 'mutiimage';
-					for (let val of store.state.依赖数据) {
-						if (val.组件名 == args.目标组件 && val.页面名 == args.目标页面) {
-							// 当前按钮控的是 对应组件依赖
-							// 根据加/减 操作依赖值
-							if (args.加或减 == '加') {
-								val.当前显示 < val.total - 1 && val.当前显示++;
-							} else {
-								val.当前显示 > 0 && val.当前显示--;
-							}
-							break;
-						}
-					}
-					break;
-				default:
-					order.type = 'btn';
-					break;
-			}
-			break;
-		case '滑块':
-			switch (args.功能类型) {
-				case 功能.控制窗帘:
-					order.type = 'curtain';
-					break;
-				default:
-					order.type = 'slider';
-					break;
-			}
-			break;
-	}
 	let body = {
 		data: { ...order, ...args.data },
 	};

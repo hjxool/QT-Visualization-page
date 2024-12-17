@@ -13,7 +13,6 @@ let url: string = 'http://localhost'
 if (r) {
   url = r[0]
 }
-// export const http地址 = `${url}:${http端口}`;
-export const http地址 = `http://192.168.0.211:${http端口}`;
+export const http地址 = `${url}:${http端口}`;
 
 export const websocket地址 = `${url}:${websocket端口}`;

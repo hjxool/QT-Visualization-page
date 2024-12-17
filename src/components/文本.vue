@@ -1,9 +1,12 @@
 <template>
-	<div class="text" :style="文字样式()">{{ data.RectText }}</div>
+	<div class="text" :style="文字样式()">
+		{{ data.RectText }}
+		<img v-if="背景图" class="bg_img" :src="背景图" />
+	</div>
 </template>
 
 <script setup lang="ts">
-import { computed, defineProps, watch } from 'vue';
+import { computed, defineProps, ref, watch } from 'vue';
 import { useStore } from 'vuex';
 import 农历 from 'chinese-lunar';
 import { http地址 } from '@/vue引入配置';
@@ -14,6 +17,12 @@ const store = useStore();
 const { 组件数据: data, 页面名 } = defineProps(['组件数据', '页面名']);
 const 缩放比 = computed(() => store.getters.缩放比);
 组件功能();
+
+// 图片背景
+const 背景图 = ref('');
+
+// 文字类型去空格
+data.FontStyle = data.FontStyle.replace(/\s+/g, '');
 
 // 方法
 function 文字样式() {
@@ -33,17 +42,25 @@ function 文字样式() {
 		style['writingMode'] = 'vertical-lr';
 		style['textOrientation'] = 'upright';
 	}
-	switch (data.FontStyle) {
-		case '斜体':
-			style['fontStyle'] = 'italic';
-			break;
-		case '粗体':
-			style['fontWeight'] = 'bold';
-			break;
-		case '粗斜体':
-			style['fontStyle'] = 'italic';
-			style['fontWeight'] = 'bold';
-			break;
+	for (let val of data.FontStyle) {
+		switch (val) {
+			case '斜体':
+				style['fontStyle'] = 'italic';
+				break;
+			case '粗体':
+				style['fontWeight'] = 'bold';
+				break;
+			case '粗斜体':
+				style['fontStyle'] = 'italic';
+				style['fontWeight'] = 'bold';
+				break;
+			case '下划线':
+				style['textDecoration'] = 'underline';
+				break;
+			case '删除线':
+				style['textDecoration'] = 'line-through';
+				break;
+		}
 	}
 	return style;
 }
@@ -79,14 +96,24 @@ function 组件功能() {
 					break;
 			}
 		}, 1000);
-	} else if (data.FontResult === '中控IP' || data.FontResult === '中控温度') {
-		http请求(`${http地址}/GetCofig`).then(({ data: { ip, temp } }) => {
+	} else if (data.FontResult === '中控IP' || data.FontResult === '中控温度' || data.FontResult === '城市' || data.FontResult === '温度' || data.FontResult === '天气') {
+		http请求(`${http地址}/GetCofig`).then(({ data: res }) => {
 			switch (data.FontResult) {
 				case '中控IP':
-					data.RectText = ip;
+					data.RectText = res.ip;
 					break;
 				case '中控温度':
-					data.RectText = `${temp}°C`;
+					data.RectText = `${res.temp}°C`;
+					break;
+				case '城市':
+					data.RectText = res.city;
+					break;
+				case '温度':
+					data.RectText = `${res.citytemp}°C`;
+					break;
+				case '天气':
+					data.RectText = '';
+					背景图.value = `/img/weather/${res.weather}.png`;
 					break;
 			}
 		});
@@ -115,5 +142,8 @@ function 获取星期(date: Date): string | void {
 <style lang="less" scoped>
 .text {
 	white-space: nowrap;
+}
+.bg_img {
+	z-index: 10;
 }
 </style>

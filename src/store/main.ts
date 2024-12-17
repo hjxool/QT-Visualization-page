@@ -2,9 +2,7 @@ import { createStore } from "vuex"
 import user from './user.ts'
 import { http请求 } from "@/api/请求"
 import { http地址 } from "@/vue引入配置";
-
-// 测试
-// import 测试数据 from './测试3.json'
+// import 页面数据 from '/CenterControl.json'
 
 interface State {
   [key: string]: any, // 允许其他任意属性的写法
@@ -77,7 +75,7 @@ export default createStore({
                   // 说明依赖于矩阵组件的值 需要将对应组件添加到依赖
                   // 根据找对应ID的多个组件
                   需要收集的组件.find((e: any) => e.id == t[1]) == undefined && 需要收集的组件.push({
-                    根据何字段查找: 'DeviceId',
+                    条件类型: 'DeviceId-按钮矩阵',
                     目标组件类型: 18,
                     id: t[1],
                     采集者: 组件.name,
@@ -86,7 +84,7 @@ export default createStore({
                 } else if (t[0] == 功能.切换轮播图) {
                   // 使用场景 多对一 因此根据目标组件去重
                   需要收集的组件.find((e: any) => e.目标页面 == t[1] && e.目标组件 == t[2]) == undefined && 需要收集的组件.push({
-                    根据何字段查找: '页面和组件-轮播',
+                    条件类型: '页面和组件-轮播',
                     目标组件类型: 26,
                     目标页面: t[1],
                     目标组件: t[2],
@@ -101,7 +99,7 @@ export default createStore({
                 if (t[0] == 功能.控制窗帘) {
                   // 控制窗帘 使用场景只考虑一对一 所以用同一目标组件去重
                   需要收集的组件.find((e: any) => e.目标页面 == t[1] && e.目标组件 == t[2]) == undefined && 需要收集的组件.push({
-                    根据何字段查找: '页面和组件-滑块',
+                    条件类型: '页面和组件-滑块窗帘',
                     目标组件类型: 7,
                     目标页面: t[1],
                     目标组件: t[2],
@@ -119,8 +117,8 @@ export default createStore({
           for (let 组件 of 页面.data) {
             if (目标.目标组件类型 == 组件.property) {
               // 是对应要添加的组件类型 根据不同类型匹配字段
-              switch (目标.根据何字段查找) {
-                case 'DeviceId':
+              switch (目标.条件类型) {
+                case 'DeviceId-按钮矩阵':
                   if (目标.id == 组件.DeviceId) {
                     // 一对多 将符合的组件全部加入依赖
                     state.依赖数据.push({
@@ -135,7 +133,7 @@ export default createStore({
                     })
                   }
                   break;
-                case '页面和组件-滑块':
+                case '页面和组件-滑块窗帘':
                   if (目标.组件名 == 组件.name && 目标.页面名 == 页面.pagename) {
                     // 根据使用场景 只存一个符合的组件
                     state.依赖数据.push({
@@ -197,17 +195,25 @@ export default createStore({
   },
   actions: {
     async 获取界面数据(context: any) {
+      // 优先读取本地文件
       context.commit('set_state', { name: '加载', value: true });
-      let { code, data } = await http请求(`${http地址}/GetVisulInfo`)
-      context.commit('set_state', { name: '加载', value: false });
-      if (code == 200) {
-        console.log('获取界面数据', data)
-        context.commit('set_state', { name: '工程ID', value: data.projectid })
-        context.commit('组件数据初始化', data.data)
+      let 页面数据 = await http请求('/CenterControl.json')
+      if (!页面数据) {
+        // 没有则通过接口获取
+        let { code, data } = await http请求(`${http地址}/GetVisulInfo`)
+        if (code == 200) {
+          页面数据 = data
+        } else {
+          页面数据 = {
+            projectid: '',
+            data: []
+          }
+        }
       }
-
-      // 测试
-      // context.commit('组件数据初始化', 测试数据.data)
+      console.log('获取界面数据', 页面数据)
+      context.commit('set_state', { name: '工程ID', value: 页面数据.projectid })
+      context.commit('组件数据初始化', 页面数据.data)
+      context.commit('set_state', { name: '加载', value: false });
     }
   },
   getters: {

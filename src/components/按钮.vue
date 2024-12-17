@@ -1,6 +1,6 @@
 <template>
 	<div class="button center" @mousedown="按下()" @mouseup="抬起()" :style="按钮样式()">
-		<span>{{ 激活 ? data.ActiveRectText : data.RectText }}</span>
+		<span class="文字" :style="文字样式()">{{ 文字内容() }}</span>
 		<div class="bg_img" :style="按钮背景()"></div>
 	</div>
 </template>
@@ -73,15 +73,28 @@ const 发送指令 = inject('发送指令') as (args: 指令参数) => void;
 // base64图片缺少前缀
 let reg = /^data\:image\/png\;base64\,/;
 // 没有前缀则添加
-if (data.ActivePictureName_base !== 'NONE' && !reg.test(data.ActivePictureName_base)) {
-	data.ActivePictureName_base = `data:image/png;base64,${data.ActivePictureName_base}`;
+let t = data.PictureNme.split('.');
+if (t[t.length - 1] == 'gif' || !data.PictureNme_base) {
+	data.PictureNme_base = `/图包/${data.PictureNme}`;
+} else if (data.PictureNme_base && data.PictureNme_base !== 'NONE') {
+	if (!reg.test(data.PictureNme_base)) {
+		data.PictureNme_base = `data:image/png;base64,${data.PictureNme_base}`;
+	}
 }
-if (data.PictureNme_base !== 'NONE' && !reg.test(data.PictureNme_base)) {
-	data.PictureNme_base = `data:image/png;base64,${data.PictureNme_base}`;
+let t2 = data.ActivePictureName.split('.');
+if (t2[t2.length - 1] == 'gif' || !data.ActivePictureName_base) {
+	data.ActivePictureName_base = `/图包/${data.ActivePictureName}`;
+} else if (data.ActivePictureName_base && data.ActivePictureName_base !== 'NONE') {
+	if (!reg.test(data.ActivePictureName_base)) {
+		data.ActivePictureName_base = `data:image/png;base64,${data.ActivePictureName_base}`;
+	}
 }
 
 // 区分按钮功能类型
 const 功能类型 = data.Data.split(';')[0];
+
+// 文字类型去空格 分割成数组
+data.FontStyle = data.FontStyle.replace(/\s+/g, '').split('+');
 
 // 方法
 function 按下() {
@@ -189,19 +202,42 @@ function 查询跳转页类型(): string {
 }
 function 指令参数(按下: number) {
 	let body: any = {
-		类型: '按钮',
 		组件名: data.name,
 		页面名,
-		按下: 按下,
 		data: {},
+		type: 'btn',
+		ispress: 按下,
 	};
 	if (data.Data.length) {
 		let t = data.Data.split(';');
-		body['功能类型'] = t[0];
-		if (body['功能类型'] == 功能.切换轮播图) {
-			body['加或减'] = t[3] == 1 ? '加' : '减';
-			body['目标页面'] = t[1];
-			body['目标组件'] = t[2];
+		switch (t[0]) {
+			case 功能.下发矩阵值:
+				body.type = 'matrix';
+				for (let val of store.state.依赖数据) {
+					if (val.采集者 == data.name && val.采集者所在页面 == 页面名) {
+						// 找到依赖的矩阵数据 收集并下发
+						body.data[val.是否为输入端 ? 'input' : 'output'] = val.激活序列;
+					}
+				}
+				break;
+			case 功能.切换轮播图:
+				body.type = 'mutiimage';
+				for (let val of store.state.依赖数据) {
+					if (val.组件名 == t[2] && val.页面名 == t[1]) {
+						// 当前按钮控的是 对应组件依赖
+						// 根据加/减 操作依赖值
+						if (t[3] == 1) {
+							val.当前显示 < val.total - 1 && val.当前显示++;
+						} else {
+							val.当前显示 > 0 && val.当前显示--;
+						}
+						body.组件名 = t[2];
+						body.页面名 = t[1];
+						body.data.value = [val.当前显示];
+						break;
+					}
+				}
+				break;
 		}
 	}
 	setTimeout(() => {
@@ -210,25 +246,10 @@ function 指令参数(按下: number) {
 }
 function 按钮样式() {
 	let style: any = {
-		color: 激活.value ? data.ActiveFontColor : data.FontColor,
-		fontSize: `${data.FontSize * 缩放比.value.高度比}px`,
-		fontFamily: data.FontFormat,
 		borderColor: 激活.value ? data.ActiveRectColor : data.RectColor,
-		borderWidth: `${data.RectWidth}px`,
+		borderWidth: `${激活.value ? data.ActiveRectWidth : data.RectWidth}px`,
 		borderStyle: 'solid',
 	};
-	switch (data.FontStyle) {
-		case '斜体':
-			style['fontStyle'] = 'italic';
-			break;
-		case '粗体':
-			style['fontWeight'] = 'bold';
-			break;
-		case '粗斜体':
-			style['fontStyle'] = 'italic';
-			style['fontWeight'] = 'bold';
-			break;
-	}
 	return style;
 }
 function 按钮背景() {
@@ -273,6 +294,49 @@ function 按钮背景() {
 	}
 	return style;
 }
+function 文字样式() {
+	let style: any = {
+		color: 激活.value ? data.ActiveFontColor : data.FontColor,
+		fontSize: `${data.FontSize * 缩放比.value.高度比}px`,
+		fontFamily: data.FontFormat,
+	};
+	if (data.FontDirection !== '横') {
+		style['writingMode'] = 'vertical-lr';
+		style['textOrientation'] = 'upright';
+	}
+	for (let val of data.FontStyle) {
+		switch (val) {
+			case '斜体':
+				style['fontStyle'] = 'italic';
+				break;
+			case '粗体':
+				style['fontWeight'] = 'bold';
+				break;
+			case '粗斜体':
+				style['fontStyle'] = 'italic';
+				style['fontWeight'] = 'bold';
+				break;
+			case '下划线':
+				style['textDecoration'] = 'underline';
+				break;
+			case '删除线':
+				style['textDecoration'] = 'line-through';
+				break;
+		}
+	}
+	return style;
+}
+function 文字内容() {
+	if (激活.value) {
+		return data.ActiveRectText || data.RectText;
+	} else {
+		return data.RectText;
+	}
+}
 </script>
 
-<style lang="less" scoped></style>
+<style lang="less" scoped>
+.文字 {
+	position: relative;
+}
+</style>

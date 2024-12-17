@@ -70,19 +70,24 @@ function 生成刻度值(): Marks {
 }
 function 下发指令() {
 	let body: any = {
-		类型: '滑块',
 		组件名: data.name,
 		页面名,
 		data: {
 			value: [target.值],
 		},
+		type: 'slider',
+		ispress: -1,
 	};
 	if (data.device.length) {
 		let t = data.device.split(';');
-		body['功能类型'] = t[0];
-		if (body['功能类型'] == 功能.控制窗帘) {
-			let 百分比 = ((target.值 - 最小值.value) / (最大值.value - 最小值.value)) * 100;
-			body.data.value = [百分比];
+		switch (t[0]) {
+			case 功能.控制窗帘:
+				body.type = 'curtain';
+				body.data.value = [((target.值 - 最小值.value) / (最大值.value - 最小值.value)) * 100];
+				// 以窗帘组件名义下发
+				body.组件名 = target.目标组件;
+				body.页面名 = target.目标页面;
+				break;
 		}
 	}
 	发送指令(body);
