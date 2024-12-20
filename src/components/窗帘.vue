@@ -47,17 +47,17 @@ watch(
 
 // 方法
 function 遮盖范围() {
-	let 百分比 = 100;
+	let 百分比 = 0;
 	if (target) {
 		百分比 = ((target.值 - target.最小值) / (target.最大值 - target.最小值)) * 100;
 	}
 	if (方向.value == '垂直模式') {
 		return {
-			height: `${百分比}%`,
+			height: `${100 - 百分比}%`,
 		};
 	} else {
 		return {
-			width: `${百分比}%`,
+			width: `${100 - 百分比}%`,
 		};
 	}
 }

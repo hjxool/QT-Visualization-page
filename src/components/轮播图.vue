@@ -41,10 +41,14 @@ watch(
 
 // 方法
 function 初始化图片(): img[] {
-	let reg = /^data\:image\/png\;base64\,/;
+	// let reg = /^data\:image\/png\;base64\,/;
+	// return data.MutiPicturenames.map((e: any) => ({
+	// 	id: e.id,
+	// 	url: reg.test(e.picturename_base) ? e.picturename_base : `data:image/png;base64,${e.picturename_base}`,
+	// }));
 	return data.MutiPicturenames.map((e: any) => ({
 		id: e.id,
-		url: reg.test(e.picturename_base) ? e.picturename_base : `data:image/png;base64,${e.picturename_base}`,
+		url: `/config/photos/${e.picturename}`,
 	}));
 }
 </script>

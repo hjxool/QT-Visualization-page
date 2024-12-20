@@ -70,25 +70,26 @@ if (data.BtnEffect === '互锁' || data.BtnEffect === '自锁') {
 // ... 表示任意数量 ...args:any 表示任意数量 任意类型的参数
 // => void 表示 无返回值
 const 发送指令 = inject('发送指令') as (args: 指令参数) => void;
-// base64图片缺少前缀
-let reg = /^data\:image\/png\;base64\,/;
-// 没有前缀则添加
-let t = data.PictureNme.split('.');
-if (t[t.length - 1] == 'gif' || !data.PictureNme_base) {
-	data.PictureNme_base = `/图包/${data.PictureNme}`;
-} else if (data.PictureNme_base && data.PictureNme_base !== 'NONE') {
-	if (!reg.test(data.PictureNme_base)) {
-		data.PictureNme_base = `data:image/png;base64,${data.PictureNme_base}`;
-	}
-}
-let t2 = data.ActivePictureName.split('.');
-if (t2[t2.length - 1] == 'gif' || !data.ActivePictureName_base) {
-	data.ActivePictureName_base = `/图包/${data.ActivePictureName}`;
-} else if (data.ActivePictureName_base && data.ActivePictureName_base !== 'NONE') {
-	if (!reg.test(data.ActivePictureName_base)) {
-		data.ActivePictureName_base = `data:image/png;base64,${data.ActivePictureName_base}`;
-	}
-}
+
+// // base64图片缺少前缀
+// let reg = /^data\:image\/png\;base64\,/;
+// // 没有前缀则添加
+// let t = data.PictureNme.split('.');
+// if (t[t.length - 1] == 'gif' || !data.PictureNme_base) {
+// 	data.PictureNme_base = `/config/photos/${data.PictureNme}`;
+// } else if (data.PictureNme_base && data.PictureNme_base !== 'NONE') {
+// 	if (!reg.test(data.PictureNme_base)) {
+// 		data.PictureNme_base = `data:image/png;base64,${data.PictureNme_base}`;
+// 	}
+// }
+// let t2 = data.ActivePictureName.split('.');
+// if (t2[t2.length - 1] == 'gif' || !data.ActivePictureName_base) {
+// 	data.ActivePictureName_base = `/config/img/${data.ActivePictureName}`;
+// } else if (data.ActivePictureName_base && data.ActivePictureName_base !== 'NONE') {
+// 	if (!reg.test(data.ActivePictureName_base)) {
+// 		data.ActivePictureName_base = `data:image/png;base64,${data.ActivePictureName_base}`;
+// 	}
+// }
 
 // 区分按钮功能类型
 const 功能类型 = data.Data.split(';')[0];
@@ -211,12 +212,18 @@ function 指令参数(按下: number) {
 	if (data.Data.length) {
 		let t = data.Data.split(';');
 		switch (t[0]) {
-			case 功能.下发矩阵值:
+			case 功能.下发按钮矩阵值:
 				body.type = 'matrix';
 				for (let val of store.state.依赖数据) {
 					if (val.采集者 == data.name && val.采集者所在页面 == 页面名) {
 						// 找到依赖的矩阵数据 收集并下发
+						val.激活序列.sort((a: string, b: string) => Number(a) - Number(b));
 						body.data[val.是否为输入端 ? 'input' : 'output'] = val.激活序列;
+						if (val.是否为输入端) {
+							// 要以输入端矩阵作为下发指令
+							body.组件名 = val.组件名;
+							body.页面名 = val.页面名;
+						}
 					}
 				}
 				break;
@@ -263,15 +270,15 @@ function 按钮背景() {
 		case '图片':
 			if (激活.value) {
 				// 激活
-				if (data.ActivePictureName_base !== 'NONE') {
-					style['backgroundImage'] = `url(${data.ActivePictureName_base})`;
+				if (data.ActivePictureName && data.ActivePictureName !== 'NONE') {
+					style['backgroundImage'] = `url(/config/photos/${data.ActivePictureName})`;
 				} else {
 					style['background'] = data.ActiveGroundcolor;
 				}
 			} else {
 				// 非激活
-				if (data.PictureNme_base !== 'NONE') {
-					style['backgroundImage'] = `url(${data.PictureNme_base})`;
+				if (data.PictureNme && data.PictureNme !== 'NONE') {
+					style['backgroundImage'] = `url(/config/photos/${data.PictureNme})`;
 				} else {
 					style['background'] = data.GroundColor;
 				}
@@ -299,6 +306,7 @@ function 文字样式() {
 		color: 激活.value ? data.ActiveFontColor : data.FontColor,
 		fontSize: `${data.FontSize * 缩放比.value.高度比}px`,
 		fontFamily: data.FontFormat,
+		letterSpacing: `${data.Spacing}px`,
 	};
 	if (data.FontDirection !== '横') {
 		style['writingMode'] = 'vertical-lr';
@@ -338,5 +346,9 @@ function 文字内容() {
 <style lang="less" scoped>
 .文字 {
 	position: relative;
+}
+.bg_img {
+	background-size: 100% 100%;
+	background-repeat: no-repeat;
 }
 </style>

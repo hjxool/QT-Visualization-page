@@ -18,7 +18,7 @@ export type {
 
 // 枚举类型
 export enum 功能 {
-  下发矩阵值 = '112',
+  下发按钮矩阵值 = '112',
   切换轮播图 = '124',
   控制窗帘 = '101'
 }
@@ -71,7 +71,7 @@ export default createStore({
               // 按钮 查看Data中是否有值
               if (组件.Data.length) {
                 let t = 组件.Data.split(';')
-                if (t[0] == 功能.下发矩阵值) {
+                if (t[0] == 功能.下发按钮矩阵值) {
                   // 说明依赖于矩阵组件的值 需要将对应组件添加到依赖
                   // 根据找对应ID的多个组件
                   需要收集的组件.find((e: any) => e.id == t[1]) == undefined && 需要收集的组件.push({
@@ -197,19 +197,8 @@ export default createStore({
     async 获取界面数据(context: any) {
       // 优先读取本地文件
       context.commit('set_state', { name: '加载', value: true });
-      let 页面数据 = await http请求('/CenterControl.json')
-      if (!页面数据) {
-        // 没有则通过接口获取
-        let { code, data } = await http请求(`${http地址}/GetVisulInfo`)
-        if (code == 200) {
-          页面数据 = data
-        } else {
-          页面数据 = {
-            projectid: '',
-            data: []
-          }
-        }
-      }
+      let 页面数据 = await http请求('/config/config.json')
+      !页面数据 && (页面数据 = { projectid: '', data: [] })
       console.log('获取界面数据', 页面数据)
       context.commit('set_state', { name: '工程ID', value: 页面数据.projectid })
       context.commit('组件数据初始化', 页面数据.data)

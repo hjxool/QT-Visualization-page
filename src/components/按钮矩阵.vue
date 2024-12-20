@@ -29,18 +29,18 @@ const 缩放比 = computed(() => store.getters.缩放比);
 // 注意 这里必须要保留父级编辑激活序列 否则直接替换序列会丢失响应式
 const target = store.state.依赖数据.find((e: any) => e.组件名 == data.name && e.页面名 == 页面名);
 
-let reg = /^data\:image\/png\;base64\,/;
-if (data.BackGroundPicName_base !== 'NONE' && !reg.test(data.BackGroundPicName_base)) {
-	data.BackGroundPicName_base = `data:image/png;base64,${data.BackGroundPicName_base}`;
-}
-if (data.ButtonMode == '图片') {
-	if (data.ActivePictureName_base !== 'NONE' && !reg.test(data.ActivePictureName_base)) {
-		data.ActivePictureName_base = `data:image/png;base64,${data.ActivePictureName_base}`;
-	}
-	if (data.PictureNme_base !== 'NONE' && !reg.test(data.PictureNme_base)) {
-		data.PictureNme_base = `data:image/png;base64,${data.PictureNme_base}`;
-	}
-}
+// let reg = /^data\:image\/png\;base64\,/;
+// if (data.BackGroundPicName_base !== 'NONE' && !reg.test(data.BackGroundPicName_base)) {
+// 	data.BackGroundPicName_base = `data:image/png;base64,${data.BackGroundPicName_base}`;
+// }
+// if (data.ButtonMode == '图片') {
+// 	if (data.ActivePictureName_base !== 'NONE' && !reg.test(data.ActivePictureName_base)) {
+// 		data.ActivePictureName_base = `data:image/png;base64,${data.ActivePictureName_base}`;
+// 	}
+// 	if (data.PictureNme_base !== 'NONE' && !reg.test(data.PictureNme_base)) {
+// 		data.PictureNme_base = `data:image/png;base64,${data.PictureNme_base}`;
+// 	}
+// }
 
 // 只有输入矩阵能接收到数据上报 然后根据输入矩阵相同采集者找输出矩阵依赖 更新输出矩阵
 if (data.IsIput) {
@@ -50,17 +50,17 @@ if (data.IsIput) {
 			if (now.类型 === '初始化') {
 				let result = now.data['matrix'].find((e: any) => e.pagename === 页面名 && e.rectname === data.name);
 				if (result) {
-					target.激活序列 = result['input'].map((num: string) => parseInt(num));
+					target.激活序列 = result['input'].map((num: string) => num);
 					// 找到对应输出端 同一个采集者 且 为输出
 					let 输出端 = store.state.依赖数据.find((e: any) => e.采集者 == target.采集者 && e.采集者所在页面 == target.采集者所在页面 && e.是否为输入端 === false);
-					输出端 && (输出端.激活序列 = result['output'].map((num: string) => parseInt(num)));
+					输出端 && (输出端.激活序列 = result['output'].map((num: string) => num));
 				}
 			} else if (now.类型 === '更新') {
 				let result = now.data['values'].find((e: any) => e.pagename === 页面名 && e.rectname === data.name);
 				if (result) {
-					target.激活序列 = now.data['input'].map((num: string) => parseInt(num));
+					target.激活序列 = now.data['input'].map((num: string) => num);
 					let 输出端 = store.state.依赖数据.find((e: any) => e.采集者 == target.采集者 && e.采集者所在页面 == target.采集者所在页面 && e.是否为输入端 === false);
-					输出端 && (输出端.激活序列 = now.data['output'].map((num: string) => parseInt(num)));
+					输出端 && (输出端.激活序列 = now.data['output'].map((num: string) => num));
 				}
 			}
 		}
@@ -78,10 +78,10 @@ function 栅格布局() {
 }
 function 按钮样式(num: number) {
 	return {
-		borderColor: target.激活序列.indexOf(num) == -1 ? data.RectColor : data.ActiveRectColor,
+		borderColor: target.激活序列.indexOf(String(num)) == -1 ? data.RectColor : data.ActiveRectColor,
 		borderWidth: `${data.RectWidth}px`,
 		borderStyle: 'solid',
-		color: target.激活序列.indexOf(num) == -1 ? data.FontColor : data.ActiveFontColor,
+		color: target.激活序列.indexOf(String(num)) == -1 ? data.FontColor : data.ActiveFontColor,
 		fontSize: `${data.FontSize * 缩放比.value.高度比}px`,
 	};
 }
@@ -91,34 +91,34 @@ function 按钮背景(type: string, num: number) {
 	};
 	switch (type) {
 		case '纯色':
-			style['background'] = target.激活序列.indexOf(num) == -1 ? data.GroundColor : data.ActiveGroundcolor;
+			style['background'] = target.激活序列.indexOf(String(num)) == -1 ? data.GroundColor : data.ActiveGroundcolor;
 			break;
 		case '图片':
-			if (target.激活序列.indexOf(num) == -1) {
+			if (target.激活序列.indexOf(String(num)) == -1) {
 				// 非激活
-				if (data.PictureNme_base !== 'NONE') {
-					style['backgroundImage'] = `url(${data.PictureNme_base})`;
+				if (data.PictureNme && data.PictureNme !== 'NONE') {
+					style['backgroundImage'] = `url(/config/photos/${data.PictureNme})`;
 				} else {
 					style['background'] = data.GroundColor;
 				}
 			} else {
 				// 激活
-				if (data.ActivePictureName_base !== 'NONE') {
-					style['backgroundImage'] = `url(${data.ActivePictureName_base})`;
+				if (data.ActivePictureName && data.ActivePictureName !== 'NONE') {
+					style['backgroundImage'] = `url(/config/photos/${data.ActivePictureName})`;
 				} else {
 					style['background'] = data.ActiveGroundcolor;
 				}
 			}
 			break;
 		case '双色水平渐变':
-			if (target.激活序列.indexOf(num) == -1) {
+			if (target.激活序列.indexOf(String(num)) == -1) {
 				style['background'] = `linear-gradient(to right, ${data.GroundColor}, ${data.GroundColor2})`;
 			} else {
 				style['background'] = `linear-gradient(to right, ${data.ActiveGroundcolor}, ${data.ActiveGroundcolor2})`;
 			}
 			break;
 		case '双色垂直渐变':
-			if (target.激活序列.indexOf(num) == -1) {
+			if (target.激活序列.indexOf(String(num)) == -1) {
 				style['background'] = `linear-gradient(${data.GroundColor}, ${data.GroundColor2})`;
 			} else {
 				style['background'] = `linear-gradient(${data.ActiveGroundcolor}, ${data.ActiveGroundcolor2})`;
@@ -130,12 +130,16 @@ function 按钮背景(type: string, num: number) {
 function 点击(num: number) {
 	if (data.IsIput) {
 		// 输入 只能激活一个按钮
-		target.激活序列 = [num];
+		target.激活序列 = [String(num)];
 	} else {
 		// 输出可以多个一起点亮
-		if (target.激活序列.indexOf(num) == -1) {
-			target.激活序列.push(num);
-			target.激活序列 = target.激活序列.sort();
+		let index = target.激活序列.indexOf(String(num));
+		if (index == -1) {
+			// 点击的不是同一个 则添加
+			target.激活序列.push(String(num));
+		} else {
+			// 点的相同  则取出
+			target.激活序列.splice(index, 1);
 		}
 	}
 }
@@ -144,9 +148,12 @@ function 点击(num: number) {
 <style lang="less" scoped>
 .grid {
 	display: grid;
-	background-image: url();
 }
 .button {
 	overflow: hidden;
+}
+.bg_img {
+	background-size: 100% 100%;
+	background-repeat: no-repeat;
 }
 </style>
