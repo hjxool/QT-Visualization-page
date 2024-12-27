@@ -1,7 +1,7 @@
 import { createStore } from "vuex"
 import user from './user.ts'
 import { http请求 } from "@/api/请求"
-import { http地址 } from "@/vue引入配置";
+// import { http地址 } from "@/vue引入配置";
 // import 页面数据 from '/CenterControl.json'
 
 interface State {
@@ -18,7 +18,7 @@ export type {
 
 // 枚举类型
 export enum 功能 {
-  下发按钮矩阵值 = '112',
+  // 下发按钮矩阵值 = '112',
   切换轮播图 = '124',
   控制窗帘 = '101'
 }
@@ -71,17 +71,20 @@ export default createStore({
               // 按钮 查看Data中是否有值
               if (组件.Data.length) {
                 let t = 组件.Data.split(';')
-                if (t[0] == 功能.下发按钮矩阵值) {
-                  // 说明依赖于矩阵组件的值 需要将对应组件添加到依赖
-                  // 根据找对应ID的多个组件
-                  需要收集的组件.find((e: any) => e.id == t[1]) == undefined && 需要收集的组件.push({
-                    条件类型: 'DeviceId-按钮矩阵',
-                    目标组件类型: 18,
-                    id: t[1],
-                    采集者: 组件.name,
-                    采集者所在页面: 页面.pagename
-                  })
-                } else if (t[0] == 功能.切换轮播图) {
+                //#region
+                // if (t[0] == 功能.下发按钮矩阵值) {
+                //   // 说明依赖于矩阵组件的值 需要将对应组件添加到依赖
+                //   // 根据找对应ID的多个组件
+                //   需要收集的组件.find((e: any) => e.id == t[1]) == undefined && 需要收集的组件.push({
+                //     条件类型: 'DeviceId-按钮矩阵',
+                //     目标组件类型: 18,
+                //     id: t[1],
+                //     采集者: 组件.name,
+                //     采集者所在页面: 页面.pagename
+                //   })
+                // } else
+                //#endregion
+                if (t[0] == 功能.切换轮播图) {
                   // 使用场景 多对一 因此根据目标组件去重
                   需要收集的组件.find((e: any) => e.目标页面 == t[1] && e.目标组件 == t[2]) == undefined && 需要收集的组件.push({
                     条件类型: '页面和组件-轮播',
@@ -118,21 +121,23 @@ export default createStore({
             if (目标.目标组件类型 == 组件.property) {
               // 是对应要添加的组件类型 根据不同类型匹配字段
               switch (目标.条件类型) {
-                case 'DeviceId-按钮矩阵':
-                  if (目标.id == 组件.DeviceId) {
-                    // 一对多 将符合的组件全部加入依赖
-                    state.依赖数据.push({
-                      // 矩阵根据组件和页面定位依赖 存自身值
-                      组件名: 组件.name,
-                      页面名: 页面.pagename,
-                      激活序列: [],
-                      是否为输入端: 组件.IsIput,
-                      // 按钮下发指令时 根据这两个字段定位依赖 下发一或多个值
-                      采集者: 目标.采集者,
-                      采集者所在页面: 目标.采集者所在页面
-                    })
-                  }
-                  break;
+                //#region
+                // case 'DeviceId-按钮矩阵':
+                //   if (目标.id == 组件.DeviceId) {
+                //     // 一对多 将符合的组件全部加入依赖
+                //     state.依赖数据.push({
+                //       // 矩阵根据组件和页面定位依赖 存自身值
+                //       组件名: 组件.name,
+                //       页面名: 页面.pagename,
+                //       激活序列: [],
+                //       是否为输入端: 组件.IsIput,
+                //       // 按钮下发指令时 根据这两个字段定位依赖 下发一或多个值
+                //       采集者: 目标.采集者,
+                //       采集者所在页面: 目标.采集者所在页面
+                //     })
+                //   }
+                //   break;
+                //#endregion
                 case '页面和组件-滑块窗帘':
                   if (目标.组件名 == 组件.name && 目标.页面名 == 页面.pagename) {
                     // 根据使用场景 只存一个符合的组件

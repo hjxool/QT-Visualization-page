@@ -5,7 +5,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, watch } from 'vue';
+import { reactive, ref, watch } from 'vue';
 import { useStore } from 'vuex';
 
 // 属性
@@ -13,7 +13,15 @@ const store = useStore();
 const { 组件数据: data, 页面名 } = defineProps(['组件数据', '页面名']);
 
 // 找依赖数据
-const target = store.state.依赖数据.find((e: any) => e.组件名 == data.name && e.页面名 == 页面名);
+let target = store.state.依赖数据.find((e: any) => e.组件名 == data.name && e.页面名 == 页面名);
+if (!target) {
+	target = reactive({
+		组件名: data.name,
+		页面名,
+		当前显示: 0,
+		total: data.MutiPicturenames.length,
+	});
+}
 
 interface img {
 	id: number;
@@ -33,7 +41,7 @@ watch(
 		} else if (now.类型 === '更新') {
 			let result = now.data['values'].find((e: any) => e.pagename === 页面名 && e.rectname === data.name);
 			if (result) {
-				target.当前显示 = parseInt(result.value[0]);
+				target.当前显示 = parseInt(result.value);
 			}
 		}
 	}

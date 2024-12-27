@@ -12,7 +12,9 @@
 
 			<cus-login v-if="item.property == 22" class="component" :组件数据="item" />
 
-			<cus-button-matrix v-if="item.property == 18" class="component" :组件数据="item" :页面名="面板数据.pagename" :style="通用组件样式(item)" />
+			<cus-button-matrix1 v-if="item.property == 18 && item.ViewmatrixStyle == '样式一'" class="component" :组件数据="item" :页面名="面板数据.pagename" :style="通用组件样式(item)" />
+
+			<cus-button-matrix2 v-if="item.property == 18 && item.ViewmatrixStyle == '样式二'" class="component" :组件数据="item" :页面名="面板数据.pagename" :style="通用组件样式(item)" />
 
 			<container v-if="item.property == 8" v-show="item.ShowPage === 子容器" class="component container" :面板数据="item" :style="面板样式(item)"></container>
 
@@ -32,7 +34,8 @@ import cusImg from './图片.vue';
 import cusText from './文本.vue';
 import cusLogin from './登录.vue';
 import cusSlider from './滑块.vue';
-import cusButtonMatrix from './按钮矩阵.vue';
+import cusButtonMatrix1 from './按钮矩阵-样式一.vue';
+import cusButtonMatrix2 from './按钮矩阵-样式二.vue';
 import cusCurtain from './窗帘.vue';
 import cusScrollImg from './轮播图.vue';
 

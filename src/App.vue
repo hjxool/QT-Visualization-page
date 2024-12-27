@@ -55,7 +55,7 @@ function 发送指令(args: 指令参数) {
 		projectid: 工程id.value,
 		rectname: args.组件名,
 		pagename: args.页面名,
-		value: [],
+		value: '',
 		ispress: args.ispress,
 		type: args.type,
 	};
@@ -100,13 +100,18 @@ function 创建websocket连接(url: string, reconnect_count: number = 0, max_cou
 				// 只有第一次来的数据才是 初始化数据 后续都是更新
 				初始化or更新 = '更新';
 			} else {
-				if (uuid !== data.senderip) {
-					// senderip 不是本机uuid 才解析数据 说明是从其他端推过来的数据
-					store.commit('set_state', {
-						name: '通信数据',
-						value: { 类型: 初始化or更新, data },
-					});
+				switch (data.type) {
+					case 'btn':
+						break;
+					default:
+						// senderip是本机uuid 不解析数据 说明是本机发下去的数据
+						if (uuid == data.senderip) return;
+						break;
 				}
+				store.commit('set_state', {
+					name: '通信数据',
+					value: { 类型: 初始化or更新, data },
+				});
 			}
 		}
 	};

@@ -13,7 +13,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, watch } from 'vue';
+import { computed, reactive, watch } from 'vue';
 import { useStore } from 'vuex';
 
 // 属性
@@ -27,8 +27,18 @@ const { 组件数据: data, 页面名 } = defineProps(['组件数据', '页面�
 const 缩放比 = computed(() => store.getters.缩放比);
 // 当前组件执行初始化时 已经存在于依赖数据 将其找到并在组件中响应式使用
 // 注意 这里必须要保留父级编辑激活序列 否则直接替换序列会丢失响应式
-const target = store.state.依赖数据.find((e: any) => e.组件名 == data.name && e.页面名 == 页面名);
-
+let target = store.state.依赖数据.find((e: any) => e.组件名 == data.name && e.页面名 == 页面名);
+// 没有找到target 为了不影响使用自己构造
+if (!target) {
+	target = reactive({
+		组件名: data.name,
+		页面名,
+		激活序列: [],
+		是否为输入端: data.IsIput,
+		采集者: '',
+		采集者所在页面: '',
+	});
+}
 // let reg = /^data\:image\/png\;base64\,/;
 // if (data.BackGroundPicName_base !== 'NONE' && !reg.test(data.BackGroundPicName_base)) {
 // 	data.BackGroundPicName_base = `data:image/png;base64,${data.BackGroundPicName_base}`;

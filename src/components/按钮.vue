@@ -212,21 +212,23 @@ function 指令参数(按下: number) {
 	if (data.Data.length) {
 		let t = data.Data.split(';');
 		switch (t[0]) {
-			case 功能.下发按钮矩阵值:
-				body.type = 'matrix';
-				for (let val of store.state.依赖数据) {
-					if (val.采集者 == data.name && val.采集者所在页面 == 页面名) {
-						// 找到依赖的矩阵数据 收集并下发
-						val.激活序列.sort((a: string, b: string) => Number(a) - Number(b));
-						body.data[val.是否为输入端 ? 'input' : 'output'] = val.激活序列;
-						if (val.是否为输入端) {
-							// 要以输入端矩阵作为下发指令
-							body.组件名 = val.组件名;
-							body.页面名 = val.页面名;
-						}
-					}
-				}
-				break;
+			//#region
+			// case 功能.下发按钮矩阵值:
+			// 	body.type = 'matrix';
+			// 	for (let val of store.state.依赖数据) {
+			// 		if (val.采集者 == data.name && val.采集者所在页面 == 页面名) {
+			// 			// 找到依赖的矩阵数据 收集并下发
+			// 			val.激活序列.sort((a: string, b: string) => Number(a) - Number(b));
+			// 			body.data[val.是否为输入端 ? 'input' : 'output'] = val.激活序列;
+			// 			if (val.是否为输入端) {
+			// 				// 要以输入端矩阵作为下发指令
+			// 				body.组件名 = val.组件名;
+			// 				body.页面名 = val.页面名;
+			// 			}
+			// 		}
+			// 	}
+			// 	break;
+			//#endregion
 			case 功能.切换轮播图:
 				body.type = 'mutiimage';
 				for (let val of store.state.依赖数据) {
@@ -240,7 +242,7 @@ function 指令参数(按下: number) {
 						}
 						body.组件名 = t[2];
 						body.页面名 = t[1];
-						body.data.value = [val.当前显示];
+						body.data.value = `${val.当前显示}`;
 						break;
 					}
 				}

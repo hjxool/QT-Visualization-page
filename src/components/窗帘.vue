@@ -16,7 +16,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, watch } from 'vue';
+import { reactive, ref, watch } from 'vue';
 import { useStore } from 'vuex';
 
 // 属性
@@ -24,7 +24,18 @@ const store = useStore();
 const { 组件数据: data, 页面名 } = defineProps(['组件数据', '页面名']);
 const 方向 = ref(data.CurtainMode);
 // 找依赖数据
-const target = store.state.依赖数据.find((e: any) => e.目标组件 == data.name && e.目标页面 == 页面名);
+let target = store.state.依赖数据.find((e: any) => e.目标组件 == data.name && e.目标页面 == 页面名);
+if (!target) {
+	target = reactive({
+		组件名: '',
+		页面名,
+		最小值: 0,
+		最大值: 100,
+		值: 0,
+		目标页面: '',
+		目标组件: '',
+	});
+}
 
 // 窗帘同步数据不是给滑块的 而是给窗帘下发 因此要监听同步数据
 watch(
@@ -39,7 +50,7 @@ watch(
 		} else if (now.类型 === '更新') {
 			let result = now.data['values'].find((e: any) => e.pagename === 页面名 && e.rectname === data.name);
 			if (result) {
-				target.值 = (parseFloat(result.value[0]) / 100) * (target.最大值 - target.最小值) + target.最小值;
+				target.值 = (parseFloat(result.value) / 100) * (target.最大值 - target.最小值) + target.最小值;
 			}
 		}
 	}

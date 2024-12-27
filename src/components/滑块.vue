@@ -45,7 +45,7 @@ watch(
 		} else if (now.类型 === '更新') {
 			let result = now.data['values'].find((e: any) => e.pagename === 页面名 && e.rectname === data.name);
 			if (result) {
-				target.值 = parseFloat(result.value[0]);
+				target.值 = parseFloat(result.value);
 			}
 		}
 	}
@@ -73,7 +73,7 @@ function 下发指令() {
 		组件名: data.name,
 		页面名,
 		data: {
-			value: [target.值],
+			value: `${target.值}`,
 		},
 		type: 'slider',
 		ispress: -1,
@@ -83,7 +83,7 @@ function 下发指令() {
 		switch (t[0]) {
 			case 功能.控制窗帘:
 				body.type = 'curtain';
-				body.data.value = [((target.值 - 最小值.value) / (最大值.value - 最小值.value)) * 100];
+				body.data.value = `${((target.值 - 最小值.value) / (最大值.value - 最小值.value)) * 100}`;
 				// 以窗帘组件名义下发
 				body.组件名 = target.目标组件;
 				body.页面名 = target.目标页面;

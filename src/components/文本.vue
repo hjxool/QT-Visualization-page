@@ -73,7 +73,7 @@ function 组件功能() {
 				if (now.类型 === '更新') {
 					// 先找是否存在于values中
 					let result = now.data['values'].find((e: any) => e.pagename === 页面名 && e.rectname === data.name);
-					result && (data.RectText = result.value[0]);
+					result && (data.RectText = result.value);
 				}
 			}
 		);
