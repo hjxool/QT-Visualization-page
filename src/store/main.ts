@@ -164,7 +164,7 @@ export default createStore({
                       页面名: 页面.pagename,
                       当前显示: 0, // 默认从第一张开始
                       // 控制按钮需要知道有几张图 增加到末尾时要停滞
-                      total: 组件.MutiPicturenames.length,
+                      total: 组件.loopmode == '图片循环' ? 组件.MutiPicturenames.length : 组件.MutiFontname.length,
                     })
                   }
                   break
@@ -208,6 +208,19 @@ export default createStore({
       context.commit('set_state', { name: '工程ID', value: 页面数据.projectid })
       context.commit('组件数据初始化', 页面数据.data)
       context.commit('set_state', { name: '加载', value: false });
+
+      // context.commit('组件数据初始化', [{
+      //   "grondcolor": "#f0f0f0",
+      //   "height": 1080,
+      //   "ismainpage": true,
+      //   "ismove": true,
+      //   "pageid": "1735205118",
+      //   "pagename": "首页",
+      //   "property": 0,
+      //   "showtime": 0,
+      //   "width": 1920,
+      //   data: []
+      // }])
     }
   },
   getters: {

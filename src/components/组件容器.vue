@@ -1,7 +1,8 @@
 <template>
 	<div>
-		<!-- 普通组件 -->
-		<template v-for="item in 面板数据.data">
+		<!-- 普通组件
+     不要用template标签 没法绑定key 没有key会导致节点被复用 -->
+		<div v-for="item in 面板数据.data" :key="item.rectid">
 			<cus-button v-if="item.property == 3" class="component" :组件数据="item" :跳转子容器="显示子容器" :互锁="互锁" :切换激活="切换激活" :页面名="面板数据.pagename" :style="通用组件样式(item)" />
 
 			<cus-img v-if="item.property == 5" class="component" :组件数据="item" :style="通用组件样式(item)" />
@@ -21,7 +22,7 @@
 			<cus-curtain v-if="item.property == 25" class="component" :组件数据="item" :页面名="面板数据.pagename" :style="通用组件样式(item)" />
 
 			<cus-scroll-img v-if="item.property == 26" class="component" :组件数据="item" :页面名="面板数据.pagename" :style="通用组件样式(item)" />
-		</template>
+		</div>
 	</div>
 </template>
 

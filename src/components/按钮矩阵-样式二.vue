@@ -186,13 +186,13 @@ function 按钮背景(类型: string, 按钮: any) {
 function 初始化() {
 	for (let i = 0; i < data.Column; i++) {
 		IN.value.push({
-			label: data.ButtonInfo[i],
+			label: data.ButtonInfo[i].name,
 			列: i + 1, // in只能单选 由全局变量和列确定样式
 		});
 	}
 	for (let o = data.Column; o < data.ViewmatrixColnum + data.Column; o++) {
 		OUT.value.push({
-			label: data.ButtonInfo[o],
+			label: data.ButtonInfo[o].name,
 			列: o - data.Column + 1,
 			激活: false, // out可以多选 所以由按钮自身属性确定样式
 		});

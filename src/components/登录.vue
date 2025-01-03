@@ -47,7 +47,7 @@
 				</div>
 
 				<div class="row_layout" style="justify-content: center">
-					<el-button type="primary" @click="登录(表单对象)">登录</el-button>
+					<el-button type="primary" @click="登录(表单对象!)">登录</el-button>
 				</div>
 			</el-form>
 		</div>
@@ -55,25 +55,12 @@
 </template>
 
 <script setup lang="ts">
-import { computed, defineProps, inject, onMounted, ref } from 'vue';
+import { computed, defineProps, ref } from 'vue';
 import { http地址 } from '@/vue引入配置';
 import type { FormInstance } from 'element-plus';
 import { http请求 } from '@/api/请求';
 import { 消息 } from '@/api/消息';
 import { useStore } from 'vuex';
-
-onMounted(async () => {
-	try {
-		// 获取本机IP
-		let {
-			data: { ip },
-		} = await http请求(`${http地址}/GetCofig`);
-		form.value.通信IP = ip;
-		IP列表.value.push(ip);
-	} catch (error) {
-		console.log('登录组件err', error);
-	}
-});
 
 // 属性
 const store = useStore();
@@ -150,6 +137,10 @@ function 登录(formRef: FormInstance) {
 function 表单初始化() {
 	store.state.user.记住账号 && (form.value.用户名 = store.state.user.用户名);
 	store.state.user.记住密码 && (form.value.密码 = store.state.user.密码);
+	// 获取本机IP
+	let ip = location.hostname;
+	form.value.通信IP = ip;
+	IP列表.value.push(ip);
 }
 function 缩放() {
 	return {

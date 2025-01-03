@@ -58,6 +58,7 @@ function 发送指令(args: 指令参数) {
 		value: '',
 		ispress: args.ispress,
 		type: args.type,
+		matrixvalues: [],
 	};
 	let body = {
 		data: { ...order, ...args.data },

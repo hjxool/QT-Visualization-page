@@ -22,7 +22,7 @@ const 缩放比 = computed(() => store.getters.缩放比);
 const 背景图 = ref('');
 
 // 文字类型去空格
-data.FontStyle = data.FontStyle.replace(/\s+/g, '');
+data.FontStyle = data.FontStyle.replace(/\s+/g, '').split('+');
 
 // 方法
 function 文字样式() {

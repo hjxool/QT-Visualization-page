@@ -237,8 +237,10 @@ function 指令参数(按下: number) {
 						// 根据加/减 操作依赖值
 						if (t[3] == 1) {
 							val.当前显示 < val.total - 1 && val.当前显示++;
-						} else {
+						} else if (t[3] == 2) {
 							val.当前显示 > 0 && val.当前显示--;
+						} else if (t[3] == 0) {
+							val.当前显示 = 0;
 						}
 						body.组件名 = t[2];
 						body.页面名 = t[1];
